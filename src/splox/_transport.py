@@ -87,7 +87,9 @@ def _parse_sse_line(line: str) -> Optional[SSEEvent]:
     except json.JSONDecodeError:
         return SSEEvent(raw_data=payload)
 
-    return SSEEvent.from_dict(data)
+    event = SSEEvent.from_dict(data)
+    event.raw_data = payload
+    return event
 
 
 class SyncTransport:
