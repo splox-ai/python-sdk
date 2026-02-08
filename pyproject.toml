@@ -43,8 +43,8 @@ dev = [
 [project.urls]
 Homepage = "https://splox.io"
 Documentation = "https://docs.splox.io"
-Repository = "https://github.com/splox-io/python-sdk"
-Issues = "https://github.com/splox-io/python-sdk/issues"
+Repository = "https://github.com/splox-ai/python-sdk"
+Issues = "https://github.com/splox-ai/python-sdk/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/splox"]
