@@ -86,15 +86,36 @@ async for event in async_client.workflows.listen(workflow_request_id):
 
 ### Listen to chat messages
 
-```python
-# Sync
-for event in client.chats.listen(chat_id):
-    print(event)
+Stream real-time chat events including text deltas, tool calls, and more:
 
-# Async
-async for event in async_client.chats.listen(chat_id):
-    print(event)
+```python
+# Async example — collect streamed response
+async for event in client.chats.listen(chat_id):
+    if event.event_type == "text_delta":
+        print(event.text_delta, end="", flush=True)
+    elif event.event_type == "tool_call_start":
+        print(f"\\nCalling tool: {event.tool_name}")
+    elif event.event_type == "done":
+        print("\\nIteration complete")
+    
+    # Stop when workflow completes
+    if event.workflow_request and event.workflow_request.status == "completed":
+        break
 ```
+
+**Event types:**
+
+| Type | Fields | Description |
+|------|--------|-------------|
+| `text_delta` | `text_delta` | Streamed text chunk |
+| `reasoning_delta` | `reasoning_delta`, `reasoning_type` | Thinking content |
+| `tool_call_start` | `tool_call_id`, `tool_name` | Tool call initiated |
+| `tool_call_delta` | `tool_call_id`, `tool_args_delta` | Tool arguments delta |
+| `tool_start` | `tool_name`, `tool_call_id` | Tool execution started |
+| `tool_complete` | `tool_name`, `tool_call_id`, `tool_result` | Tool finished |
+| `tool_error` | `tool_name`, `tool_call_id`, `error` | Tool failed |
+| `done` | `iteration`, `run_id` | Iteration complete |
+| `error` | `error` | Error occurred |
 
 ## Run & Wait
 

@@ -557,12 +557,56 @@ class EventResponse:
 
 @dataclass
 class SSEEvent:
-    """A single Server-Sent Event from a listen stream."""
+    """A single Server-Sent Event from a listen stream.
+
+    For chat events, check the `event_type` field:
+    - "text_delta": `text_delta` contains the streamed text chunk
+    - "reasoning_delta": `reasoning_delta` contains thinking text
+    - "tool_call_start": Tool call initiated (`tool_call_id`, `tool_name`)
+    - "tool_call_delta": Tool call args delta (`tool_call_id`, `tool_args_delta`)
+    - "tool_start": Tool execution started (`tool_name`, `tool_call_id`)
+    - "tool_complete": Tool finished (`tool_name`, `tool_call_id`, `tool_result`)
+    - "tool_error": Tool failed (`tool_name`, `tool_call_id`, `error`)
+    - "tool_approval_request": Approval needed (`tool_name`, `tool_call_id`, `tool_args`)
+    - "tool_approval_response": Approval result (`tool_name`, `tool_call_id`, `approved`)
+    - "user_message": Voice transcript (`text`)
+    - "done": Iteration complete
+    - "stopped": User stopped workflow
+    - "error": Error occurred (`error`)
+    - None: Check `workflow_request` and `node_execution` for status updates
+    """
 
     workflow_request: Optional[WorkflowRequest] = None
     node_execution: Optional[NodeExecution] = None
     is_keepalive: bool = False
     raw_data: Optional[str] = None
+
+    # Event type and metadata
+    event_type: Optional[str] = None
+    iteration: Optional[int] = None
+    run_id: Optional[str] = None
+
+    # Text streaming
+    text_delta: Optional[str] = None
+
+    # Reasoning/thinking
+    reasoning_delta: Optional[str] = None
+    reasoning_type: Optional[str] = None
+
+    # Tool calls
+    tool_call_id: Optional[str] = None
+    tool_name: Optional[str] = None
+    tool_args_delta: Optional[str] = None
+    tool_args: Optional[Any] = None
+    tool_result: Optional[Any] = None
+
+    # Tool approval
+    approved: Optional[bool] = None
+
+    # Messages and errors
+    text: Optional[str] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> SSEEvent:
@@ -572,7 +616,33 @@ class SSEEvent:
             wr = WorkflowRequest.from_dict(data["workflow_request"])
         if "node_execution" in data and data["node_execution"]:
             ne = NodeExecution.from_dict(data["node_execution"])
-        return cls(workflow_request=wr, node_execution=ne)
+
+        event_type = data.get("type")
+
+        return cls(
+            workflow_request=wr,
+            node_execution=ne,
+            event_type=event_type,
+            iteration=data.get("iteration"),
+            run_id=data.get("run_id"),
+            # Text streaming
+            text_delta=data.get("delta"),
+            # Reasoning
+            reasoning_delta=data.get("reasoning_delta"),
+            reasoning_type=data.get("reasoning_type"),
+            # Tool calls
+            tool_call_id=data.get("tool_call_id"),
+            tool_name=data.get("tool_name"),
+            tool_args_delta=data.get("tool_args_delta"),
+            tool_args=data.get("args"),
+            tool_result=data.get("result"),
+            # Approval
+            approved=data.get("approved"),
+            # Messages/errors
+            text=data.get("text"),
+            message=data.get("message"),
+            error=data.get("error"),
+        )
 
 
 # --- Billing / Cost Tracking ---
