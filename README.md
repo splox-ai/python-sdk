@@ -1,6 +1,6 @@
 # Splox Python SDK
 
-Official Python SDK for the [Splox API](https://docs.splox.io) — run workflows, manage chats, and monitor execution programmatically.
+Official Python SDK for the [Splox API](https://docs.splox.io) — run workflows, manage chats, browse the MCP catalog, and monitor execution programmatically.
 
 ## Installation
 
@@ -193,6 +193,71 @@ client.memory.delete(
 )
 ```
 
+## MCP (Model Context Protocol)
+
+Browse the MCP server catalog, manage end-user connections, and generate credential-submission links.
+
+### Catalog
+
+```python
+# Search the MCP catalog
+catalog = client.mcp.list_catalog(search="github", per_page=10)
+for server in catalog.mcp_servers:
+    print(f"{server.name} — {server.url}")
+
+# Get featured servers
+featured = client.mcp.list_catalog(featured=True)
+
+# Get a single catalog item
+item = client.mcp.get_catalog_item("mcp-server-id")
+print(item.name, item.auth_type)
+```
+
+### Connections
+
+```python
+# List all end-user connections
+conns = client.mcp.list_connections()
+print(f"{conns.total} connections")
+
+# Filter by MCP server or end-user
+filtered = client.mcp.list_connections(
+    mcp_server_id="server-id",
+    end_user_id="user-123",
+)
+
+# Delete a connection
+client.mcp.delete_connection("connection-id")
+```
+
+### Connection Token & Link
+
+Generate signed JWTs for end-user credential submission — no API call required:
+
+```python
+from splox import generate_connection_token, generate_connection_link
+
+# Generate a token (expires in 1 hour)
+token = generate_connection_token(
+    mcp_server_id="mcp-server-id",
+    owner_user_id="owner-user-id",
+    end_user_id="end-user-id",
+    credentials_encryption_key="your-credentials-encryption-key",
+)
+
+# Generate a full connection link
+link = generate_connection_link(
+    base_url="https://app.splox.io",
+    mcp_server_id="mcp-server-id",
+    owner_user_id="owner-user-id",
+    end_user_id="end-user-id",
+    credentials_encryption_key="your-credentials-encryption-key",
+)
+# → https://app.splox.io/tools/connect?token=eyJhbG...
+```
+
+Async usage is identical — the token/link functions are synchronous and available on both `client.mcp` and as standalone imports.
+
 ## Webhooks
 
 ```python
@@ -288,6 +353,24 @@ client = SploxClient(
 | `clear(node_id, ...)` | Remove all messages |
 | `export(node_id, ...)` | Export all messages |
 | `delete(memory_id, ...)` | Delete a memory instance |
+
+### `client.mcp`
+
+| Method | Description |
+|--------|-------------|
+| `list_catalog(...)` | Search/list MCP catalog (paginated) |
+| `get_catalog_item(id)` | Get a single catalog item |
+| `list_connections(...)` | List end-user connections |
+| `delete_connection(id)` | Delete an end-user connection |
+| `generate_connection_token(...)` | Create a signed JWT (1 hr expiry) |
+| `generate_connection_link(...)` | Build a full connection URL |
+
+### Standalone functions
+
+| Function | Description |
+|----------|-------------|
+| `generate_connection_token(server_id, owner_id, end_user_id, key)` | Create a signed JWT |
+| `generate_connection_link(base_url, server_id, owner_id, end_user_id, key)` | Build a full connection URL |
 
 ## License
 
