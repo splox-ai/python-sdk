@@ -14,6 +14,10 @@ from splox._models import (
     ExecutionTree,
     ExecutionTreeResponse,
     HistoryResponse,
+    MCPCatalogItem,
+    MCPCatalogListResponse,
+    MCPConnection,
+    MCPConnectionListResponse,
     MemoryActionResponse,
     MemoryGetResponse,
     MemoryInstance,
@@ -40,6 +44,7 @@ from splox._models import (
     DailyActivity,
     DailyActivityResponse,
 )
+from splox._mcp import generate_connection_token, generate_connection_link
 
 __all__ = [
     "SploxClient",
@@ -56,6 +61,10 @@ __all__ = [
     "ExecutionTree",
     "ExecutionTreeResponse",
     "HistoryResponse",
+    "MCPCatalogItem",
+    "MCPCatalogListResponse",
+    "MCPConnection",
+    "MCPConnectionListResponse",
     "MemoryActionResponse",
     "MemoryGetResponse",
     "MemoryInstance",
@@ -81,6 +90,8 @@ __all__ = [
     "ActivityStats",
     "DailyActivity",
     "DailyActivityResponse",
+    "generate_connection_token",
+    "generate_connection_link",
 ]
 
-__version__ = "0.1.4"
+__version__ = "0.0.2"

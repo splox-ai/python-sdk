@@ -926,3 +926,117 @@ class MemoryActionResponse:
             messages=msgs,
             remaining_count=data.get("remaining_count", 0),
         )
+
+
+# ---------------------------------------------------------------------------
+# MCP Catalog
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class MCPCatalogItem:
+    """An MCP server from the catalog."""
+
+    id: str
+    name: str
+    url: str
+    transport_type: str
+    auth_type: str
+    is_featured: bool
+    created_at: str
+    updated_at: str
+    description: Optional[str] = None
+    auth_config: Optional[Dict[str, Any]] = None
+    image_url: Optional[str] = None
+    category: Optional[str] = None
+    display_order: Optional[int] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPCatalogItem:
+        return cls(
+            id=data["id"],
+            name=data["name"],
+            url=data["url"],
+            transport_type=data["transport_type"],
+            auth_type=data["auth_type"],
+            is_featured=data.get("is_featured", False),
+            created_at=data.get("created_at", ""),
+            updated_at=data.get("updated_at", ""),
+            description=data.get("description"),
+            auth_config=data.get("auth_config"),
+            image_url=data.get("image_url"),
+            category=data.get("category"),
+            display_order=data.get("display_order"),
+        )
+
+
+@dataclass
+class MCPCatalogListResponse:
+    """Paginated list of MCP catalog items."""
+
+    mcp_servers: List[MCPCatalogItem]
+    current_page: int
+    per_page: int
+    total_count: int
+    total_pages: int
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPCatalogListResponse:
+        return cls(
+            mcp_servers=[MCPCatalogItem.from_dict(s) for s in (data.get("mcp_servers") or [])],
+            current_page=data.get("current_page", 1),
+            per_page=data.get("per_page", 20),
+            total_count=data.get("total_count", 0),
+            total_pages=data.get("total_pages", 0),
+        )
+
+
+# ---------------------------------------------------------------------------
+# MCP Connections
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class MCPConnection:
+    """An end-user MCP server connection."""
+
+    id: str
+    user_id: str
+    name: str
+    url: str
+    transport_type: str
+    auth_type: str
+    created_at: str
+    image_url: Optional[str] = None
+    auth_config: Optional[Dict[str, Any]] = None
+    end_user_id: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPConnection:
+        return cls(
+            id=data["id"],
+            user_id=data["user_id"],
+            name=data["name"],
+            url=data["url"],
+            transport_type=data["transport_type"],
+            auth_type=data["auth_type"],
+            created_at=data.get("created_at", ""),
+            image_url=data.get("image_url"),
+            auth_config=data.get("auth_config"),
+            end_user_id=data.get("end_user_id"),
+        )
+
+
+@dataclass
+class MCPConnectionListResponse:
+    """List of MCP connections with total count."""
+
+    connections: List[MCPConnection]
+    total: int
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPConnectionListResponse:
+        return cls(
+            connections=[MCPConnection.from_dict(c) for c in (data.get("connections") or [])],
+            total=data.get("total", 0),
+        )

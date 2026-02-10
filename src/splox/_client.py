@@ -17,6 +17,7 @@ from splox._resources import (
     Memory,
     Workflows,
 )
+from splox._mcp import AsyncMCP, MCP
 from splox._transport import DEFAULT_BASE_URL, DEFAULT_TIMEOUT, AsyncTransport, SyncTransport
 
 
@@ -62,6 +63,7 @@ class SploxClient:
         self.events = Events(self._transport)
         self.billing = Billing(self._transport)
         self.memory = Memory(self._transport)
+        self.mcp = MCP(self._transport)
 
     def close(self) -> None:
         """Close the underlying HTTP connection pool."""
@@ -116,6 +118,7 @@ class AsyncSploxClient:
         self.events = AsyncEvents(self._transport)
         self.billing = AsyncBilling(self._transport)
         self.memory = AsyncMemory(self._transport)
+        self.mcp = AsyncMCP(self._transport)
 
     async def close(self) -> None:
         """Close the underlying HTTP connection pool."""
