@@ -62,12 +62,12 @@ def test_mcp_sync_discovery_integration() -> None:
         assert catalog.total_count >= 0
         assert isinstance(catalog.mcp_servers, list)
 
-        servers = client.mcp.list_user_servers()
+        servers = client.mcp.list_connections(scope="owner_user")
         assert servers.total >= 0
-        assert isinstance(servers.servers, list)
+        assert isinstance(servers.connections, list)
 
-        if servers.servers:
-            tools = client.mcp.get_server_tools(servers.servers[0].id)
+        if servers.connections:
+            tools = client.mcp.get_server_tools(servers.connections[0].id)
             assert tools.total >= 0
             assert isinstance(tools.options, list)
 
@@ -79,12 +79,12 @@ async def test_mcp_async_discovery_integration() -> None:
         assert catalog.total_count >= 0
         assert isinstance(catalog.mcp_servers, list)
 
-        servers = await client.mcp.list_user_servers()
+        servers = await client.mcp.list_connections(scope="owner_user")
         assert servers.total >= 0
-        assert isinstance(servers.servers, list)
+        assert isinstance(servers.connections, list)
 
-        if servers.servers:
-            tools = await client.mcp.get_server_tools(servers.servers[0].id)
+        if servers.connections:
+            tools = await client.mcp.get_server_tools(servers.connections[0].id)
             assert tools.total >= 0
             assert isinstance(tools.options, list)
 

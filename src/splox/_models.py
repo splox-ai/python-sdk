@@ -1075,54 +1075,6 @@ class MCPExecuteToolResponse:
 
 
 @dataclass
-class UserMCPServer:
-    id: str
-    user_id: str
-    name: str
-    url: str
-    transport_type: str
-    auth_type: str
-    created_at: str
-    updated_at: str
-    image_url: Optional[str] = None
-    is_system: Optional[bool] = None
-    credential_expires_at: Optional[str] = None
-    status: Optional[str] = None
-    has_credential: Optional[bool] = None
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> UserMCPServer:
-        return cls(
-            id=data.get("id", ""),
-            user_id=data.get("user_id", ""),
-            name=data.get("name", ""),
-            url=data.get("url", ""),
-            transport_type=data.get("transport_type", ""),
-            auth_type=data.get("auth_type", ""),
-            created_at=data.get("created_at", ""),
-            updated_at=data.get("updated_at", ""),
-            image_url=data.get("image_url"),
-            is_system=data.get("is_system"),
-            credential_expires_at=data.get("credential_expires_at"),
-            status=data.get("status"),
-            has_credential=data.get("has_credential"),
-        )
-
-
-@dataclass
-class UserMCPServerListResponse:
-    servers: List[UserMCPServer]
-    total: int
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> UserMCPServerListResponse:
-        return cls(
-            servers=[UserMCPServer.from_dict(s) for s in (data.get("servers") or [])],
-            total=data.get("total", 0),
-        )
-
-
-@dataclass
 class MCPServerToolOption:
     label: str
     value: str

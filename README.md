@@ -220,6 +220,9 @@ print(item.name, item.auth_type)
 conns = client.mcp.list_connections()
 print(f"{conns.total} connections")
 
+# List owner-user MCP servers via the same endpoint
+owner_servers = client.mcp.list_connections(scope="owner_user")
+
 # Filter by MCP server or end-user
 filtered = client.mcp.list_connections(
     mcp_server_id="server-id",
@@ -360,7 +363,7 @@ client = SploxClient(
 |--------|-------------|
 | `list_catalog(...)` | Search/list MCP catalog (paginated) |
 | `get_catalog_item(id)` | Get a single catalog item |
-| `list_connections(...)` | List end-user connections |
+| `list_connections(...)` | List MCP links by identity scope (`end_user` or `owner_user`) |
 | `delete_connection(id)` | Delete an end-user connection |
 | `generate_connection_token(...)` | Create a signed JWT (1 hr expiry) |
 | `generate_connection_link(...)` | Build a full connection URL |

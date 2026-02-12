@@ -88,9 +88,9 @@ def mock_event_response() -> dict:
 
 
 @pytest.fixture
-def mock_mcp_user_servers_response() -> dict:
+def mock_mcp_server_connections_response() -> dict:
     return {
-        "servers": [
+        "connections": [
             {
                 "id": "0199e001-a23b-7c8d-1234-567890abcdef",
                 "user_id": "user-001",
@@ -315,20 +315,20 @@ class TestSyncClient:
         assert chat.id == "chat-001"
         client.close()
 
-    def test_mcp_list_user_servers(self, httpx_mock, mock_mcp_user_servers_response) -> None:
+    def test_mcp_list_connections_scope_servers(self, httpx_mock, mock_mcp_server_connections_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/user-mcp-servers",
-            json=mock_mcp_user_servers_response,
+            url="https://app.splox.io/api/v1/mcp-connections?scope=owner_user",
+            json=mock_mcp_server_connections_response,
         )
 
         client = SploxClient(api_key="test-key")
-        resp = client.mcp.list_user_servers()
+        resp = client.mcp.list_connections(scope="owner_user")
 
         assert resp.total == 1
-        assert len(resp.servers) == 1
-        assert resp.servers[0].url == "https://mcp.example.com"
-        assert resp.servers[0].id == "0199e001-a23b-7c8d-1234-567890abcdef"
+        assert len(resp.connections) == 1
+        assert resp.connections[0].url == "https://mcp.example.com"
+        assert resp.connections[0].id == "0199e001-a23b-7c8d-1234-567890abcdef"
         client.close()
 
     def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:
@@ -505,18 +505,18 @@ class TestAsyncClient:
             assert resp.ok is True
 
     @pytest.mark.asyncio
-    async def test_mcp_list_user_servers(self, httpx_mock, mock_mcp_user_servers_response) -> None:
+    async def test_mcp_list_connections_scope_servers(self, httpx_mock, mock_mcp_server_connections_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/user-mcp-servers",
-            json=mock_mcp_user_servers_response,
+            url="https://app.splox.io/api/v1/mcp-connections?scope=owner_user",
+            json=mock_mcp_server_connections_response,
         )
 
         async with AsyncSploxClient(api_key="test-key") as client:
-            resp = await client.mcp.list_user_servers()
+            resp = await client.mcp.list_connections(scope="owner_user")
             assert resp.total == 1
-            assert len(resp.servers) == 1
-            assert resp.servers[0].name == "Docs MCP"
+            assert len(resp.connections) == 1
+            assert resp.connections[0].name == "Docs MCP"
 
     @pytest.mark.asyncio
     async def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:

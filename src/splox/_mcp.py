@@ -17,7 +17,6 @@ from splox._models import (
     MCPConnectionListResponse,
     MCPExecuteToolResponse,
     MCPServerToolsResponse,
-    UserMCPServerListResponse,
 )
 from splox._transport import AsyncTransport, SyncTransport
 
@@ -175,12 +174,14 @@ class MCP:
     def list_connections(
         self,
         *,
+        scope: Optional[str] = None,
         mcp_server_id: Optional[str] = None,
         end_user_id: Optional[str] = None,
     ) -> MCPConnectionListResponse:
         """List MCP connections for the authenticated user.
 
         Args:
+            scope: Optional identity scope (`"end_user"` or `"owner_user"`).
             mcp_server_id: Optional filter by MCP server UUID.
             end_user_id: Optional filter by end-user identifier.
 
@@ -188,6 +189,8 @@ class MCP:
             MCPConnectionListResponse with connections and total count.
         """
         params: Dict[str, Any] = {}
+        if scope is not None:
+            params["scope"] = scope
         if mcp_server_id is not None:
             params["mcp_server_id"] = mcp_server_id
         if end_user_id is not None:
@@ -228,11 +231,6 @@ class MCP:
         }
         data = self._t.request("POST", "/mcp-tools/execute", json_body=payload)
         return MCPExecuteToolResponse.from_dict(data)
-
-    def list_user_servers(self) -> UserMCPServerListResponse:
-        """List caller-owned MCP servers."""
-        data = self._t.request("GET", "/user-mcp-servers")
-        return UserMCPServerListResponse.from_dict(data)
 
     def get_server_tools(self, mcp_server_id: str) -> MCPServerToolsResponse:
         """List tools for a caller-owned MCP server."""
@@ -331,12 +329,14 @@ class AsyncMCP:
     async def list_connections(
         self,
         *,
+        scope: Optional[str] = None,
         mcp_server_id: Optional[str] = None,
         end_user_id: Optional[str] = None,
     ) -> MCPConnectionListResponse:
         """List MCP connections for the authenticated user.
 
         Args:
+            scope: Optional identity scope (`"end_user"` or `"owner_user"`).
             mcp_server_id: Optional filter by MCP server UUID.
             end_user_id: Optional filter by end-user identifier.
 
@@ -344,6 +344,8 @@ class AsyncMCP:
             MCPConnectionListResponse with connections and total count.
         """
         params: Dict[str, Any] = {}
+        if scope is not None:
+            params["scope"] = scope
         if mcp_server_id is not None:
             params["mcp_server_id"] = mcp_server_id
         if end_user_id is not None:
@@ -384,11 +386,6 @@ class AsyncMCP:
         }
         data = await self._t.request("POST", "/mcp-tools/execute", json_body=payload)
         return MCPExecuteToolResponse.from_dict(data)
-
-    async def list_user_servers(self) -> UserMCPServerListResponse:
-        """List caller-owned MCP servers."""
-        data = await self._t.request("GET", "/user-mcp-servers")
-        return UserMCPServerListResponse.from_dict(data)
 
     async def get_server_tools(self, mcp_server_id: str) -> MCPServerToolsResponse:
         """List tools for a caller-owned MCP server."""
