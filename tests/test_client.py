@@ -88,21 +88,20 @@ def mock_event_response() -> dict:
 
 
 @pytest.fixture
-def mock_mcp_user_connections_response() -> dict:
+def mock_mcp_user_servers_response() -> dict:
     return {
-        "connections": [
+        "servers": [
             {
-                "mcp_url": "https://mcp.example.com",
-                "tools": [
-                    {"slug": "search_documents", "description": "Search docs"},
-                    {"slug": "get_document", "description": "Get one doc"},
-                ],
-                "connections": [
-                    {
-                        "mcp_server_id": "0199e001-a23b-7c8d-1234-567890abcdef",
-                        "name": "Docs MCP",
-                    }
-                ],
+                "id": "0199e001-a23b-7c8d-1234-567890abcdef",
+                "user_id": "user-001",
+                "name": "Docs MCP",
+                "url": "https://mcp.example.com",
+                "transport_type": "streamable_http",
+                "auth_type": "manual",
+                "created_at": "2025-01-01T00:00:00Z",
+                "updated_at": "2025-01-01T00:00:00Z",
+                "status": "active",
+                "has_credential": True,
             }
         ],
         "total": 1,
@@ -110,20 +109,20 @@ def mock_mcp_user_connections_response() -> dict:
 
 
 @pytest.fixture
-def mock_mcp_search_response() -> dict:
+def mock_mcp_server_tools_response() -> dict:
     return {
-        "results": [
+        "options": [
             {
-                "name": "Slack",
-                "description": "Slack MCP server",
-                "is_user_connected": False,
-                "connect_link": "https://app.splox.io/tools/connect?server_id=abc",
-                "mcp_url": "https://mcp.slack.com",
-            }
+                "label": "List Servers",
+                "value": "list_servers",
+            },
+            {
+                "label": "Get Server",
+                "value": "get_server",
+            },
         ],
-        "total": 1,
-        "limit": 10,
-        "offset": 0,
+        "total": 2,
+        "limit": 2,
     }
 
 
@@ -316,50 +315,36 @@ class TestSyncClient:
         assert chat.id == "chat-001"
         client.close()
 
-    def test_mcp_list_user_connections(self, httpx_mock, mock_mcp_user_connections_response) -> None:
+    def test_mcp_list_user_servers(self, httpx_mock, mock_mcp_user_servers_response) -> None:
         httpx_mock.add_response(
-            method="POST",
-            url="https://app.splox.io/api/v1/mcp-tools/list-user-connections",
-            json=mock_mcp_user_connections_response,
+            method="GET",
+            url="https://app.splox.io/api/v1/user-mcp-servers",
+            json=mock_mcp_user_servers_response,
         )
 
         client = SploxClient(api_key="test-key")
-        resp = client.mcp.list_user_connections()
+        resp = client.mcp.list_user_servers()
 
         assert resp.total == 1
-        assert len(resp.connections) == 1
-        assert resp.connections[0].mcp_url == "https://mcp.example.com"
-        assert resp.connections[0].tools[0].slug == "search_documents"
-        assert resp.connections[0].connections[0].mcp_server_id == "0199e001-a23b-7c8d-1234-567890abcdef"
-
-        request = httpx_mock.get_request()
-        body = json.loads(request.content)
-        assert body == {}
+        assert len(resp.servers) == 1
+        assert resp.servers[0].url == "https://mcp.example.com"
+        assert resp.servers[0].id == "0199e001-a23b-7c8d-1234-567890abcdef"
         client.close()
 
-    def test_mcp_search(self, httpx_mock, mock_mcp_search_response) -> None:
+    def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:
         httpx_mock.add_response(
-            method="POST",
-            url="https://app.splox.io/api/v1/mcp-tools/search",
-            json=mock_mcp_search_response,
+            method="GET",
+            url="https://app.splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
+            json=mock_mcp_server_tools_response,
         )
 
         client = SploxClient(api_key="test-key")
-        resp = client.mcp.search(search_query="slack", limit=10, offset=0)
+        resp = client.mcp.get_server_tools("0199e001-a23b-7c8d-1234-567890abcdef")
 
-        assert resp.total == 1
-        assert resp.limit == 10
-        assert resp.offset == 0
-        assert len(resp.results) == 1
-        assert resp.results[0].name == "Slack"
-        assert resp.results[0].is_user_connected is False
-        assert resp.results[0].mcp_url == "https://mcp.slack.com"
-
-        request = httpx_mock.get_request()
-        body = json.loads(request.content)
-        assert body["search_query"] == "slack"
-        assert body["limit"] == 10
-        assert body["offset"] == 0
+        assert resp.total == 2
+        assert resp.limit == 2
+        assert len(resp.options) == 2
+        assert resp.options[0].value == "list_servers"
         client.close()
 
 
@@ -520,38 +505,28 @@ class TestAsyncClient:
             assert resp.ok is True
 
     @pytest.mark.asyncio
-    async def test_mcp_list_user_connections(self, httpx_mock, mock_mcp_user_connections_response) -> None:
+    async def test_mcp_list_user_servers(self, httpx_mock, mock_mcp_user_servers_response) -> None:
         httpx_mock.add_response(
-            method="POST",
-            url="https://app.splox.io/api/v1/mcp-tools/list-user-connections",
-            json=mock_mcp_user_connections_response,
+            method="GET",
+            url="https://app.splox.io/api/v1/user-mcp-servers",
+            json=mock_mcp_user_servers_response,
         )
 
         async with AsyncSploxClient(api_key="test-key") as client:
-            resp = await client.mcp.list_user_connections()
+            resp = await client.mcp.list_user_servers()
             assert resp.total == 1
-            assert len(resp.connections) == 1
-            assert resp.connections[0].tools[1].slug == "get_document"
-
-        request = httpx_mock.get_request()
-        body = json.loads(request.content)
-        assert body == {}
+            assert len(resp.servers) == 1
+            assert resp.servers[0].name == "Docs MCP"
 
     @pytest.mark.asyncio
-    async def test_mcp_search(self, httpx_mock, mock_mcp_search_response) -> None:
+    async def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:
         httpx_mock.add_response(
-            method="POST",
-            url="https://app.splox.io/api/v1/mcp-tools/search",
-            json=mock_mcp_search_response,
+            method="GET",
+            url="https://app.splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
+            json=mock_mcp_server_tools_response,
         )
 
         async with AsyncSploxClient(api_key="test-key") as client:
-            resp = await client.mcp.search(search_query="slack", limit=10, offset=0)
-            assert resp.total == 1
-            assert resp.results[0].name == "Slack"
-
-        request = httpx_mock.get_request()
-        body = json.loads(request.content)
-        assert body["search_query"] == "slack"
-        assert body["limit"] == 10
-        assert body["offset"] == 0
+            resp = await client.mcp.get_server_tools("0199e001-a23b-7c8d-1234-567890abcdef")
+            assert resp.total == 2
+            assert resp.options[0].value == "list_servers"

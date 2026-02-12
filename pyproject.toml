@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "splox"
-version = "0.0.2"
+version = "0.0.3"
 description = "Official Python SDK for the Splox API — run workflows, manage chats, and monitor execution"
 readme = "README.md"
 license = "MIT"

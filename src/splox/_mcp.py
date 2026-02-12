@@ -16,8 +16,8 @@ from splox._models import (
     MCPConnection,
     MCPConnectionListResponse,
     MCPExecuteToolResponse,
-    MCPSearchResponse,
-    MCPUserConnectionsResponse,
+    MCPServerToolsResponse,
+    UserMCPServerListResponse,
 )
 from splox._transport import AsyncTransport, SyncTransport
 
@@ -229,27 +229,15 @@ class MCP:
         data = self._t.request("POST", "/mcp-tools/execute", json_body=payload)
         return MCPExecuteToolResponse.from_dict(data)
 
-    def list_user_connections(self) -> MCPUserConnectionsResponse:
-        """List caller-owned MCP connections grouped by MCP URL and tools."""
-        data = self._t.request("POST", "/mcp-tools/list-user-connections", json_body={})
-        return MCPUserConnectionsResponse.from_dict(data)
+    def list_user_servers(self) -> UserMCPServerListResponse:
+        """List caller-owned MCP servers."""
+        data = self._t.request("GET", "/user-mcp-servers")
+        return UserMCPServerListResponse.from_dict(data)
 
-    def search(
-        self,
-        *,
-        search_query: str = "",
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> MCPSearchResponse:
-        """Search MCP servers and return connection status metadata."""
-        payload: Dict[str, Any] = {"search_query": search_query}
-        if limit is not None:
-            payload["limit"] = limit
-        if offset is not None:
-            payload["offset"] = offset
-
-        data = self._t.request("POST", "/mcp-tools/search", json_body=payload)
-        return MCPSearchResponse.from_dict(data)
+    def get_server_tools(self, mcp_server_id: str) -> MCPServerToolsResponse:
+        """List tools for a caller-owned MCP server."""
+        data = self._t.request("GET", f"/user-mcp-servers/{mcp_server_id}/tools")
+        return MCPServerToolsResponse.from_dict(data)
 
     # -- Token helpers (convenience wrappers) --------------------------------
 
@@ -397,27 +385,15 @@ class AsyncMCP:
         data = await self._t.request("POST", "/mcp-tools/execute", json_body=payload)
         return MCPExecuteToolResponse.from_dict(data)
 
-    async def list_user_connections(self) -> MCPUserConnectionsResponse:
-        """List caller-owned MCP connections grouped by MCP URL and tools."""
-        data = await self._t.request("POST", "/mcp-tools/list-user-connections", json_body={})
-        return MCPUserConnectionsResponse.from_dict(data)
+    async def list_user_servers(self) -> UserMCPServerListResponse:
+        """List caller-owned MCP servers."""
+        data = await self._t.request("GET", "/user-mcp-servers")
+        return UserMCPServerListResponse.from_dict(data)
 
-    async def search(
-        self,
-        *,
-        search_query: str = "",
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> MCPSearchResponse:
-        """Search MCP servers and return connection status metadata."""
-        payload: Dict[str, Any] = {"search_query": search_query}
-        if limit is not None:
-            payload["limit"] = limit
-        if offset is not None:
-            payload["offset"] = offset
-
-        data = await self._t.request("POST", "/mcp-tools/search", json_body=payload)
-        return MCPSearchResponse.from_dict(data)
+    async def get_server_tools(self, mcp_server_id: str) -> MCPServerToolsResponse:
+        """List tools for a caller-owned MCP server."""
+        data = await self._t.request("GET", f"/user-mcp-servers/{mcp_server_id}/tools")
+        return MCPServerToolsResponse.from_dict(data)
 
     # -- Token helpers (convenience wrappers) --------------------------------
 

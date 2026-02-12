@@ -5,8 +5,6 @@ Required env vars:
 Optional env vars:
     SPLOX_BASE_URL            (default: https://app.splox.io/api/v1)
     SPLOX_MCP_SEARCH_QUERY    (default: "")
-    SPLOX_MCP_SEARCH_LIMIT    (default: 10)
-    SPLOX_MCP_SEARCH_OFFSET   (default: 0)
 
 For execute-tool integration (optional):
     SPLOX_MCP_SERVER_ID
@@ -36,8 +34,6 @@ def _normalize_base_url(value: str) -> str:
 API_KEY = os.environ.get("SPLOX_API_KEY", "").strip()
 BASE_URL = _normalize_base_url(os.environ.get("SPLOX_BASE_URL", "https://app.splox.io/api/v1"))
 SEARCH_QUERY = os.environ.get("SPLOX_MCP_SEARCH_QUERY", "")
-SEARCH_LIMIT = int(os.environ.get("SPLOX_MCP_SEARCH_LIMIT", "10"))
-SEARCH_OFFSET = int(os.environ.get("SPLOX_MCP_SEARCH_OFFSET", "0"))
 
 EXEC_SERVER_ID = os.environ.get("SPLOX_MCP_SERVER_ID", "").strip()
 EXEC_TOOL_SLUG = os.environ.get("SPLOX_MCP_TOOL_SLUG", "").strip()
@@ -62,35 +58,35 @@ def _parse_tool_args() -> dict:
 
 def test_mcp_sync_discovery_integration() -> None:
     with SploxClient(api_key=API_KEY, base_url=BASE_URL) as client:
-        conns = client.mcp.list_user_connections()
-        assert conns.total >= 0
-        assert isinstance(conns.connections, list)
+        catalog = client.mcp.list_catalog(search=SEARCH_QUERY, per_page=10)
+        assert catalog.total_count >= 0
+        assert isinstance(catalog.mcp_servers, list)
 
-        search = client.mcp.search(
-            search_query=SEARCH_QUERY,
-            limit=SEARCH_LIMIT,
-            offset=SEARCH_OFFSET,
-        )
-        assert search.limit >= 0
-        assert search.offset >= 0
-        assert isinstance(search.results, list)
+        servers = client.mcp.list_user_servers()
+        assert servers.total >= 0
+        assert isinstance(servers.servers, list)
+
+        if servers.servers:
+            tools = client.mcp.get_server_tools(servers.servers[0].id)
+            assert tools.total >= 0
+            assert isinstance(tools.options, list)
 
 
 @pytest.mark.asyncio
 async def test_mcp_async_discovery_integration() -> None:
     async with AsyncSploxClient(api_key=API_KEY, base_url=BASE_URL) as client:
-        conns = await client.mcp.list_user_connections()
-        assert conns.total >= 0
-        assert isinstance(conns.connections, list)
+        catalog = await client.mcp.list_catalog(search=SEARCH_QUERY, per_page=10)
+        assert catalog.total_count >= 0
+        assert isinstance(catalog.mcp_servers, list)
 
-        search = await client.mcp.search(
-            search_query=SEARCH_QUERY,
-            limit=SEARCH_LIMIT,
-            offset=SEARCH_OFFSET,
-        )
-        assert search.limit >= 0
-        assert search.offset >= 0
-        assert isinstance(search.results, list)
+        servers = await client.mcp.list_user_servers()
+        assert servers.total >= 0
+        assert isinstance(servers.servers, list)
+
+        if servers.servers:
+            tools = await client.mcp.get_server_tools(servers.servers[0].id)
+            assert tools.total >= 0
+            assert isinstance(tools.options, list)
 
 
 def test_mcp_execute_sync_integration() -> None:

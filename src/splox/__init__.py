@@ -18,6 +18,10 @@ from splox._models import (
     MCPCatalogListResponse,
     MCPConnection,
     MCPConnectionListResponse,
+    UserMCPServer,
+    UserMCPServerListResponse,
+    MCPServerToolOption,
+    MCPServerToolsResponse,
     MemoryActionResponse,
     MemoryGetResponse,
     MemoryInstance,
@@ -65,6 +69,10 @@ __all__ = [
     "MCPCatalogListResponse",
     "MCPConnection",
     "MCPConnectionListResponse",
+    "UserMCPServer",
+    "UserMCPServerListResponse",
+    "MCPServerToolOption",
+    "MCPServerToolsResponse",
     "MemoryActionResponse",
     "MemoryGetResponse",
     "MemoryInstance",
@@ -94,4 +102,4 @@ __all__ = [
     "generate_connection_link",
 ]
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"

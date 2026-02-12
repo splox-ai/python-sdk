@@ -1075,90 +1075,76 @@ class MCPExecuteToolResponse:
 
 
 @dataclass
-class MCPToolSummary:
-    slug: str
-    description: Optional[str] = None
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPToolSummary:
-        return cls(
-            slug=data.get("slug", ""),
-            description=data.get("description"),
-        )
-
-
-@dataclass
-class MCPConnectionRef:
-    mcp_server_id: str
+class UserMCPServer:
+    id: str
+    user_id: str
     name: str
+    url: str
+    transport_type: str
+    auth_type: str
+    created_at: str
+    updated_at: str
+    image_url: Optional[str] = None
+    is_system: Optional[bool] = None
+    credential_expires_at: Optional[str] = None
+    status: Optional[str] = None
+    has_credential: Optional[bool] = None
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPConnectionRef:
+    def from_dict(cls, data: Dict[str, Any]) -> UserMCPServer:
         return cls(
-            mcp_server_id=data.get("mcp_server_id", ""),
+            id=data.get("id", ""),
+            user_id=data.get("user_id", ""),
             name=data.get("name", ""),
+            url=data.get("url", ""),
+            transport_type=data.get("transport_type", ""),
+            auth_type=data.get("auth_type", ""),
+            created_at=data.get("created_at", ""),
+            updated_at=data.get("updated_at", ""),
+            image_url=data.get("image_url"),
+            is_system=data.get("is_system"),
+            credential_expires_at=data.get("credential_expires_at"),
+            status=data.get("status"),
+            has_credential=data.get("has_credential"),
         )
 
 
 @dataclass
-class MCPUserConnectionGroup:
-    tools: List[MCPToolSummary]
-    mcp_url: str
-    connections: List[MCPConnectionRef]
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPUserConnectionGroup:
-        return cls(
-            tools=[MCPToolSummary.from_dict(t) for t in (data.get("tools") or [])],
-            mcp_url=data.get("mcp_url", ""),
-            connections=[MCPConnectionRef.from_dict(c) for c in (data.get("connections") or [])],
-        )
-
-
-@dataclass
-class MCPUserConnectionsResponse:
-    connections: List[MCPUserConnectionGroup]
+class UserMCPServerListResponse:
+    servers: List[UserMCPServer]
     total: int
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPUserConnectionsResponse:
+    def from_dict(cls, data: Dict[str, Any]) -> UserMCPServerListResponse:
         return cls(
-            connections=[MCPUserConnectionGroup.from_dict(c) for c in (data.get("connections") or [])],
+            servers=[UserMCPServer.from_dict(s) for s in (data.get("servers") or [])],
             total=data.get("total", 0),
         )
 
 
 @dataclass
-class MCPSearchResult:
-    name: str
-    is_user_connected: bool
-    description: Optional[str] = None
-    connect_link: Optional[str] = None
-    mcp_url: Optional[str] = None
+class MCPServerToolOption:
+    label: str
+    value: str
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPSearchResult:
+    def from_dict(cls, data: Dict[str, Any]) -> MCPServerToolOption:
         return cls(
-            name=data.get("name", ""),
-            is_user_connected=data.get("is_user_connected", False),
-            description=data.get("description"),
-            connect_link=data.get("connect_link"),
-            mcp_url=data.get("mcp_url"),
+            label=data.get("label", ""),
+            value=data.get("value", ""),
         )
 
 
 @dataclass
-class MCPSearchResponse:
-    results: List[MCPSearchResult]
+class MCPServerToolsResponse:
+    options: List[MCPServerToolOption]
     total: int
     limit: int
-    offset: int
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MCPSearchResponse:
+    def from_dict(cls, data: Dict[str, Any]) -> MCPServerToolsResponse:
         return cls(
-            results=[MCPSearchResult.from_dict(r) for r in (data.get("results") or [])],
+            options=[MCPServerToolOption.from_dict(o) for o in (data.get("options") or [])],
             total=data.get("total", 0),
             limit=data.get("limit", 0),
-            offset=data.get("offset", 0),
         )
