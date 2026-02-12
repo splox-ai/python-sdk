@@ -1040,3 +1040,125 @@ class MCPConnectionListResponse:
             connections=[MCPConnection.from_dict(c) for c in (data.get("connections") or [])],
             total=data.get("total", 0),
         )
+
+
+@dataclass
+class MCPExecuteToolResult:
+    """Raw result returned by an MCP tool call."""
+
+    content: Optional[List[Dict[str, Any]]] = None
+    structured_content: Optional[Any] = None
+    is_error: bool = False
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPExecuteToolResult:
+        return cls(
+            content=data.get("content"),
+            structured_content=data.get("structuredContent"),
+            is_error=data.get("isError", False),
+        )
+
+
+@dataclass
+class MCPExecuteToolResponse:
+    """Response for direct MCP tool execution."""
+
+    result: MCPExecuteToolResult
+    is_error: bool
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPExecuteToolResponse:
+        return cls(
+            result=MCPExecuteToolResult.from_dict(data.get("result") or {}),
+            is_error=data.get("is_error", False),
+        )
+
+
+@dataclass
+class MCPToolSummary:
+    slug: str
+    description: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPToolSummary:
+        return cls(
+            slug=data.get("slug", ""),
+            description=data.get("description"),
+        )
+
+
+@dataclass
+class MCPConnectionRef:
+    mcp_server_id: str
+    name: str
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPConnectionRef:
+        return cls(
+            mcp_server_id=data.get("mcp_server_id", ""),
+            name=data.get("name", ""),
+        )
+
+
+@dataclass
+class MCPUserConnectionGroup:
+    tools: List[MCPToolSummary]
+    mcp_url: str
+    connections: List[MCPConnectionRef]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPUserConnectionGroup:
+        return cls(
+            tools=[MCPToolSummary.from_dict(t) for t in (data.get("tools") or [])],
+            mcp_url=data.get("mcp_url", ""),
+            connections=[MCPConnectionRef.from_dict(c) for c in (data.get("connections") or [])],
+        )
+
+
+@dataclass
+class MCPUserConnectionsResponse:
+    connections: List[MCPUserConnectionGroup]
+    total: int
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPUserConnectionsResponse:
+        return cls(
+            connections=[MCPUserConnectionGroup.from_dict(c) for c in (data.get("connections") or [])],
+            total=data.get("total", 0),
+        )
+
+
+@dataclass
+class MCPSearchResult:
+    name: str
+    is_user_connected: bool
+    description: Optional[str] = None
+    connect_link: Optional[str] = None
+    mcp_url: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPSearchResult:
+        return cls(
+            name=data.get("name", ""),
+            is_user_connected=data.get("is_user_connected", False),
+            description=data.get("description"),
+            connect_link=data.get("connect_link"),
+            mcp_url=data.get("mcp_url"),
+        )
+
+
+@dataclass
+class MCPSearchResponse:
+    results: List[MCPSearchResult]
+    total: int
+    limit: int
+    offset: int
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MCPSearchResponse:
+        return cls(
+            results=[MCPSearchResult.from_dict(r) for r in (data.get("results") or [])],
+            total=data.get("total", 0),
+            limit=data.get("limit", 0),
+            offset=data.get("offset", 0),
+        )

@@ -15,6 +15,9 @@ from splox._models import (
     MCPCatalogListResponse,
     MCPConnection,
     MCPConnectionListResponse,
+    MCPExecuteToolResponse,
+    MCPSearchResponse,
+    MCPUserConnectionsResponse,
 )
 from splox._transport import AsyncTransport, SyncTransport
 
@@ -201,6 +204,53 @@ class MCP:
         """
         self._t.request("DELETE", f"/mcp-connections/{connection_id}")
 
+    def execute_tool(
+        self,
+        *,
+        mcp_server_id: str,
+        tool_slug: str,
+        args: Optional[Dict[str, Any]] = None,
+    ) -> MCPExecuteToolResponse:
+        """Execute a tool on a caller-owned MCP server.
+
+        Args:
+            mcp_server_id: UUID of the configured MCP server.
+            tool_slug: MCP tool name/slug.
+            args: Optional tool arguments object.
+
+        Returns:
+            MCPExecuteToolResponse with raw MCP result payload.
+        """
+        payload: Dict[str, Any] = {
+            "mcp_server_id": mcp_server_id,
+            "tool_slug": tool_slug,
+            "args": args or {},
+        }
+        data = self._t.request("POST", "/mcp-tools/execute", json_body=payload)
+        return MCPExecuteToolResponse.from_dict(data)
+
+    def list_user_connections(self) -> MCPUserConnectionsResponse:
+        """List caller-owned MCP connections grouped by MCP URL and tools."""
+        data = self._t.request("POST", "/mcp-tools/list-user-connections", json_body={})
+        return MCPUserConnectionsResponse.from_dict(data)
+
+    def search(
+        self,
+        *,
+        search_query: str = "",
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> MCPSearchResponse:
+        """Search MCP servers and return connection status metadata."""
+        payload: Dict[str, Any] = {"search_query": search_query}
+        if limit is not None:
+            payload["limit"] = limit
+        if offset is not None:
+            payload["offset"] = offset
+
+        data = self._t.request("POST", "/mcp-tools/search", json_body=payload)
+        return MCPSearchResponse.from_dict(data)
+
     # -- Token helpers (convenience wrappers) --------------------------------
 
     @staticmethod
@@ -321,6 +371,53 @@ class AsyncMCP:
             connection_id: UUID of the connection to delete.
         """
         await self._t.request("DELETE", f"/mcp-connections/{connection_id}")
+
+    async def execute_tool(
+        self,
+        *,
+        mcp_server_id: str,
+        tool_slug: str,
+        args: Optional[Dict[str, Any]] = None,
+    ) -> MCPExecuteToolResponse:
+        """Execute a tool on a caller-owned MCP server.
+
+        Args:
+            mcp_server_id: UUID of the configured MCP server.
+            tool_slug: MCP tool name/slug.
+            args: Optional tool arguments object.
+
+        Returns:
+            MCPExecuteToolResponse with raw MCP result payload.
+        """
+        payload: Dict[str, Any] = {
+            "mcp_server_id": mcp_server_id,
+            "tool_slug": tool_slug,
+            "args": args or {},
+        }
+        data = await self._t.request("POST", "/mcp-tools/execute", json_body=payload)
+        return MCPExecuteToolResponse.from_dict(data)
+
+    async def list_user_connections(self) -> MCPUserConnectionsResponse:
+        """List caller-owned MCP connections grouped by MCP URL and tools."""
+        data = await self._t.request("POST", "/mcp-tools/list-user-connections", json_body={})
+        return MCPUserConnectionsResponse.from_dict(data)
+
+    async def search(
+        self,
+        *,
+        search_query: str = "",
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> MCPSearchResponse:
+        """Search MCP servers and return connection status metadata."""
+        payload: Dict[str, Any] = {"search_query": search_query}
+        if limit is not None:
+            payload["limit"] = limit
+        if offset is not None:
+            payload["offset"] = offset
+
+        data = await self._t.request("POST", "/mcp-tools/search", json_body=payload)
+        return MCPSearchResponse.from_dict(data)
 
     # -- Token helpers (convenience wrappers) --------------------------------
 
