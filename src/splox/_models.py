@@ -1100,3 +1100,83 @@ class MCPServerToolsResponse:
             total=data.get("total", 0),
             limit=data.get("limit", 0),
         )
+
+
+# --- Workflow Secrets ---
+
+
+@dataclass
+class WorkflowSecretMetadata:
+    """Metadata for a workflow secret (value is never exposed)."""
+
+    id: str
+    workflow_id: str
+    key: str
+    secret_type: str
+    created_at: str
+    updated_at: str
+    end_user_id: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> WorkflowSecretMetadata:
+        return cls(
+            id=data["id"],
+            workflow_id=data["workflow_id"],
+            key=data["key"],
+            secret_type=data["secret_type"],
+            created_at=data.get("created_at", ""),
+            updated_at=data.get("updated_at", ""),
+            end_user_id=data.get("end_user_id"),
+        )
+
+
+@dataclass
+class EndUserSecretsSummary:
+    """Summary of secrets for a specific end-user."""
+
+    end_user_id: str
+    secrets: List[WorkflowSecretMetadata]
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> EndUserSecretsSummary:
+        return cls(
+            end_user_id=data["end_user_id"],
+            secrets=[
+                WorkflowSecretMetadata.from_dict(s)
+                for s in (data.get("secrets") or [])
+            ],
+        )
+
+
+@dataclass
+class GenerateSecretsLinkResponse:
+    """Response from generating a secrets submission link."""
+
+    link: str
+    token: str
+    end_user_id: str
+    expires_in: str
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> GenerateSecretsLinkResponse:
+        return cls(
+            link=data["link"],
+            token=data["token"],
+            end_user_id=data["end_user_id"],
+            expires_in=data.get("expires_in", "1h"),
+        )
+
+
+@dataclass
+class SecretActionResponse:
+    """Response from setting or deleting a secret."""
+
+    success: bool
+    key: str
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> SecretActionResponse:
+        return cls(
+            success=data.get("success", False),
+            key=data.get("key", ""),
+        )

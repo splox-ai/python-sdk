@@ -10,18 +10,22 @@ from splox._models import (
     ChatHistoryResponse,
     ChatListResponse,
     ChatMessage,
+    EndUserSecretsSummary,
     EventResponse,
     ExecutionTreeResponse,
+    GenerateSecretsLinkResponse,
     HistoryResponse,
     MemoryActionResponse,
     MemoryGetResponse,
     MemoryListResponse,
     RunResponse,
     SSEEvent,
+    SecretActionResponse,
     StartNodesResponse,
     WorkflowFull,
     WorkflowListResponse,
     WorkflowRequestFile,
+    WorkflowSecretMetadata,
     WorkflowVersion,
     WorkflowVersionListResponse,
     UserBalance,
@@ -281,6 +285,136 @@ class Workflows:
 
         return self.get_execution_tree(result.workflow_request_id)
 
+    # -- Secrets -----------------------------------------------------------
+
+    def list_secrets(
+        self,
+        workflow_id: str,
+        *,
+        end_user_id: Optional[str] = None,
+    ) -> List[WorkflowSecretMetadata]:
+        """List secret keys for a workflow (values are never returned).
+
+        Args:
+            workflow_id: The workflow ID.
+            end_user_id: If set, list secrets for this end-user instead of builder secrets.
+
+        Returns:
+            List of secret metadata objects.
+        """
+        params: Dict[str, Any] = {}
+        if end_user_id is not None:
+            params["end_user_id"] = end_user_id
+        data = self._t.request("GET", f"/workflows/{workflow_id}/secrets", params=params)
+        return [WorkflowSecretMetadata.from_dict(s) for s in data]
+
+    def set_env_secret(
+        self,
+        workflow_id: str,
+        *,
+        key: str,
+        value: str,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Create or update an environment-variable secret.
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key name.
+            value: Secret value (will be encrypted at rest).
+            end_user_id: If set, store as an end-user secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        body: Dict[str, Any] = {"key": key, "value": value}
+        if end_user_id is not None:
+            body["end_user_id"] = end_user_id
+        data = self._t.request("POST", f"/workflows/{workflow_id}/secrets/env", json_body=body)
+        return SecretActionResponse.from_dict(data)
+
+    def set_file_secret(
+        self,
+        workflow_id: str,
+        *,
+        key: str,
+        s3_url: str,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Create or update a file-type secret (S3 URL).
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key name.
+            s3_url: S3 URL where the file is stored.
+            end_user_id: If set, store as an end-user secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        body: Dict[str, Any] = {"key": key, "s3_url": s3_url}
+        if end_user_id is not None:
+            body["end_user_id"] = end_user_id
+        data = self._t.request("POST", f"/workflows/{workflow_id}/secrets/file", json_body=body)
+        return SecretActionResponse.from_dict(data)
+
+    def delete_secret(
+        self,
+        workflow_id: str,
+        key: str,
+        *,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Delete a secret from a workflow.
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key to delete.
+            end_user_id: If set, delete the end-user's secret instead of the builder secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        params: Dict[str, Any] = {}
+        if end_user_id is not None:
+            params["end_user_id"] = end_user_id
+        data = self._t.request("DELETE", f"/workflows/{workflow_id}/secrets/{key}", params=params)
+        return SecretActionResponse.from_dict(data)
+
+    def list_end_user_secrets(
+        self,
+        workflow_id: str,
+    ) -> List[EndUserSecretsSummary]:
+        """List all end-user secrets grouped by end_user_id.
+
+        Args:
+            workflow_id: The workflow ID.
+
+        Returns:
+            List of EndUserSecretsSummary, one per end-user.
+        """
+        data = self._t.request("GET", f"/workflows/{workflow_id}/secrets/end-users")
+        return [EndUserSecretsSummary.from_dict(s) for s in data]
+
+    def generate_secrets_link(
+        self,
+        workflow_id: str,
+        *,
+        end_user_id: str,
+    ) -> GenerateSecretsLinkResponse:
+        """Generate a public link for an end-user to submit secrets.
+
+        Args:
+            workflow_id: The workflow ID.
+            end_user_id: Identifier for the end-user.
+
+        Returns:
+            GenerateSecretsLinkResponse with the link, token, and expiry.
+        """
+        body = {"end_user_id": end_user_id}
+        data = self._t.request("POST", f"/workflows/{workflow_id}/secrets/generate-link", json_body=body)
+        return GenerateSecretsLinkResponse.from_dict(data)
+
 
 # ---------------------------------------------------------------------------
 # Workflows (async)
@@ -531,6 +665,136 @@ class AsyncWorkflows:
                 break
 
         return await self.get_execution_tree(result.workflow_request_id)
+
+    # -- Secrets -----------------------------------------------------------
+
+    async def list_secrets(
+        self,
+        workflow_id: str,
+        *,
+        end_user_id: Optional[str] = None,
+    ) -> List[WorkflowSecretMetadata]:
+        """List secret keys for a workflow (values are never returned).
+
+        Args:
+            workflow_id: The workflow ID.
+            end_user_id: If set, list secrets for this end-user instead of builder secrets.
+
+        Returns:
+            List of secret metadata objects.
+        """
+        params: Dict[str, Any] = {}
+        if end_user_id is not None:
+            params["end_user_id"] = end_user_id
+        data = await self._t.request("GET", f"/workflows/{workflow_id}/secrets", params=params)
+        return [WorkflowSecretMetadata.from_dict(s) for s in data]
+
+    async def set_env_secret(
+        self,
+        workflow_id: str,
+        *,
+        key: str,
+        value: str,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Create or update an environment-variable secret.
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key name.
+            value: Secret value (will be encrypted at rest).
+            end_user_id: If set, store as an end-user secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        body: Dict[str, Any] = {"key": key, "value": value}
+        if end_user_id is not None:
+            body["end_user_id"] = end_user_id
+        data = await self._t.request("POST", f"/workflows/{workflow_id}/secrets/env", json_body=body)
+        return SecretActionResponse.from_dict(data)
+
+    async def set_file_secret(
+        self,
+        workflow_id: str,
+        *,
+        key: str,
+        s3_url: str,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Create or update a file-type secret (S3 URL).
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key name.
+            s3_url: S3 URL where the file is stored.
+            end_user_id: If set, store as an end-user secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        body: Dict[str, Any] = {"key": key, "s3_url": s3_url}
+        if end_user_id is not None:
+            body["end_user_id"] = end_user_id
+        data = await self._t.request("POST", f"/workflows/{workflow_id}/secrets/file", json_body=body)
+        return SecretActionResponse.from_dict(data)
+
+    async def delete_secret(
+        self,
+        workflow_id: str,
+        key: str,
+        *,
+        end_user_id: Optional[str] = None,
+    ) -> SecretActionResponse:
+        """Delete a secret from a workflow.
+
+        Args:
+            workflow_id: The workflow ID.
+            key: Secret key to delete.
+            end_user_id: If set, delete the end-user's secret instead of the builder secret.
+
+        Returns:
+            SecretActionResponse confirming the operation.
+        """
+        params: Dict[str, Any] = {}
+        if end_user_id is not None:
+            params["end_user_id"] = end_user_id
+        data = await self._t.request("DELETE", f"/workflows/{workflow_id}/secrets/{key}", params=params)
+        return SecretActionResponse.from_dict(data)
+
+    async def list_end_user_secrets(
+        self,
+        workflow_id: str,
+    ) -> List[EndUserSecretsSummary]:
+        """List all end-user secrets grouped by end_user_id.
+
+        Args:
+            workflow_id: The workflow ID.
+
+        Returns:
+            List of EndUserSecretsSummary, one per end-user.
+        """
+        data = await self._t.request("GET", f"/workflows/{workflow_id}/secrets/end-users")
+        return [EndUserSecretsSummary.from_dict(s) for s in data]
+
+    async def generate_secrets_link(
+        self,
+        workflow_id: str,
+        *,
+        end_user_id: str,
+    ) -> GenerateSecretsLinkResponse:
+        """Generate a public link for an end-user to submit secrets.
+
+        Args:
+            workflow_id: The workflow ID.
+            end_user_id: Identifier for the end-user.
+
+        Returns:
+            GenerateSecretsLinkResponse with the link, token, and expiry.
+        """
+        body = {"end_user_id": end_user_id}
+        data = await self._t.request("POST", f"/workflows/{workflow_id}/secrets/generate-link", json_body=body)
+        return GenerateSecretsLinkResponse.from_dict(data)
 
 
 # ---------------------------------------------------------------------------
