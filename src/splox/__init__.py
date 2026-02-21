@@ -49,8 +49,13 @@ from splox._models import (
     ActivityStats,
     DailyActivity,
     DailyActivityResponse,
+    ChatCompletion,
+    ChatCompletionChoice,
+    ChatCompletionMessage,
+    ChatCompletionUsage,
 )
 from splox._mcp import generate_connection_token, generate_connection_link
+from splox._resources import notify, async_notify
 
 __all__ = [
     "SploxClient",
@@ -104,6 +109,12 @@ __all__ = [
     "WorkflowSecretMetadata",
     "generate_connection_token",
     "generate_connection_link",
+    "ChatCompletion",
+    "ChatCompletionChoice",
+    "ChatCompletionMessage",
+    "ChatCompletionUsage",
+    "notify",
+    "async_notify",
 ]
 
-__version__ = "0.0.6"
+__version__ = "0.0.8"

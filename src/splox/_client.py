@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
+from typing import Optional, Any
 
 from splox._resources import (
     AsyncChats,
@@ -11,11 +11,15 @@ from splox._resources import (
     AsyncMemory,
     AsyncWorkflows,
     AsyncBilling,
+    AsyncLLM,
     Billing,
     Chats,
     Events,
     Memory,
     Workflows,
+    LLM,
+    notify,
+    async_notify,
 )
 from splox._mcp import AsyncMCP, MCP
 from splox._transport import DEFAULT_BASE_URL, DEFAULT_TIMEOUT, AsyncTransport, SyncTransport
@@ -64,6 +68,12 @@ class SploxClient:
         self.billing = Billing(self._transport)
         self.memory = Memory(self._transport)
         self.mcp = MCP(self._transport)
+        self.llm = LLM(self._transport)
+
+    @staticmethod
+    def notify(webhook_url: str, data: Any) -> None:
+        """POST data to a webhook URL as JSON."""
+        notify(webhook_url, data)
 
     def close(self) -> None:
         """Close the underlying HTTP connection pool."""
@@ -119,6 +129,12 @@ class AsyncSploxClient:
         self.billing = AsyncBilling(self._transport)
         self.memory = AsyncMemory(self._transport)
         self.mcp = AsyncMCP(self._transport)
+        self.llm = AsyncLLM(self._transport)
+
+    @staticmethod
+    async def notify(webhook_url: str, data: Any) -> None:
+        """Async POST data to a webhook URL as JSON."""
+        await async_notify(webhook_url, data)
 
     async def close(self) -> None:
         """Close the underlying HTTP connection pool."""

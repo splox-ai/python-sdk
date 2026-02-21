@@ -1180,3 +1180,75 @@ class SecretActionResponse:
             success=data.get("success", False),
             key=data.get("key", ""),
         )
+
+
+@dataclass
+class ChatCompletionMessage:
+    """A message in a chat completion response."""
+
+    role: str
+    content: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ChatCompletionMessage:
+        return cls(
+            role=data.get("role", ""),
+            content=data.get("content"),
+        )
+
+
+@dataclass
+class ChatCompletionChoice:
+    """A choice in a chat completion response."""
+
+    index: int
+    message: ChatCompletionMessage
+    finish_reason: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ChatCompletionChoice:
+        return cls(
+            index=data.get("index", 0),
+            message=ChatCompletionMessage.from_dict(data.get("message", {})),
+            finish_reason=data.get("finish_reason"),
+        )
+
+
+@dataclass
+class ChatCompletionUsage:
+    """Token usage for a chat completion."""
+
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ChatCompletionUsage:
+        return cls(
+            prompt_tokens=data.get("prompt_tokens", 0),
+            completion_tokens=data.get("completion_tokens", 0),
+            total_tokens=data.get("total_tokens", 0),
+        )
+
+
+@dataclass
+class ChatCompletion:
+    """Response from a chat completion request."""
+
+    id: str
+    object: str
+    created: int
+    model: str
+    choices: List[ChatCompletionChoice]
+    usage: Optional[ChatCompletionUsage] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> ChatCompletion:
+        return cls(
+            id=data.get("id", ""),
+            object=data.get("object", "chat.completion"),
+            created=data.get("created", 0),
+            model=data.get("model", ""),
+            choices=[ChatCompletionChoice.from_dict(c) for c in data.get("choices", [])],
+            usage=ChatCompletionUsage.from_dict(data["usage"]) if data.get("usage") else None,
+        )

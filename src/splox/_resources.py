@@ -32,6 +32,7 @@ from splox._models import (
     TransactionHistoryResponse,
     ActivityStats,
     DailyActivityResponse,
+    ChatCompletion,
 )
 from splox._transport import AsyncTransport, SyncTransport
 from splox.exceptions import SploxTimeoutError
@@ -1702,3 +1703,106 @@ class AsyncMemory:
                 "workflow_version_id": workflow_version_id,
             },
         )
+
+
+# ---------------------------------------------------------------------------
+# LLM (sync)
+# ---------------------------------------------------------------------------
+
+
+class LLM:
+    """Synchronous LLM inference via the Splox /chat/completions endpoint."""
+
+    def __init__(self, transport: SyncTransport) -> None:
+        self._t = transport
+
+    def chat(
+        self,
+        *,
+        model: str,
+        messages: List[Dict[str, Any]],
+        **kwargs: Any,
+    ) -> ChatCompletion:
+        """Send a chat completion request.
+
+        Args:
+            model: Model identifier (e.g. ``openai/gpt-4o``).
+            messages: List of message dicts with ``role`` and ``content``.
+            **kwargs: Additional OpenAI-compatible parameters (temperature, max_tokens, etc.).
+
+        Returns:
+            ChatCompletion with id, model, choices, and usage.
+        """
+        body: Dict[str, Any] = {"model": model, "messages": messages, **kwargs}
+        data = self._t.request("POST", "/chat/completions", json_body=body)
+        return ChatCompletion.from_dict(data)
+
+
+# ---------------------------------------------------------------------------
+# AsyncLLM
+# ---------------------------------------------------------------------------
+
+
+class AsyncLLM:
+    """Asynchronous LLM inference via the Splox /chat/completions endpoint."""
+
+    def __init__(self, transport: AsyncTransport) -> None:
+        self._t = transport
+
+    async def chat(
+        self,
+        *,
+        model: str,
+        messages: List[Dict[str, Any]],
+        **kwargs: Any,
+    ) -> ChatCompletion:
+        """Send a chat completion request.
+
+        Args:
+            model: Model identifier (e.g. ``openai/gpt-4o``).
+            messages: List of message dicts with ``role`` and ``content``.
+            **kwargs: Additional OpenAI-compatible parameters (temperature, max_tokens, etc.).
+
+        Returns:
+            ChatCompletion with id, model, choices, and usage.
+        """
+        body: Dict[str, Any] = {"model": model, "messages": messages, **kwargs}
+        data = await self._t.request("POST", "/chat/completions", json_body=body)
+        return ChatCompletion.from_dict(data)
+
+
+def notify(webhook_url: str, data: Any) -> None:
+    """POST data to a webhook URL as JSON.
+
+    Args:
+        webhook_url: The URL to POST to.
+        data: Any JSON-serialisable payload.
+    """
+    import urllib.request, json as _json
+    body = _json.dumps(data).encode()
+    req = urllib.request.Request(
+        webhook_url,
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=10):
+        pass
+
+
+async def async_notify(webhook_url: str, data: Any) -> None:
+    """Async POST data to a webhook URL as JSON.
+
+    Args:
+        webhook_url: The URL to POST to.
+        data: Any JSON-serialisable payload.
+    """
+    import json as _json
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            await session.post(webhook_url, json=data, timeout=aiohttp.ClientTimeout(total=10))
+    except ImportError:
+        import asyncio
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, notify, webhook_url, data)
