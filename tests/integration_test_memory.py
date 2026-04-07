@@ -35,12 +35,12 @@ if not API_KEY:
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
-def _run_workflow_and_wait(client: SploxClient, workflow_id: str, version_id: str, start_node_id: str, query: str, chat_id: str) -> str:
+def _run_workflow_and_wait(client: SploxClient, workflow_id: str, version_id: str, entry_node_id: str, query: str, chat_id: str) -> str:
     """Run a workflow and block until it completes. Returns the workflow_request_id."""
     result = client.workflows.run(
         workflow_version_id=version_id,
         chat_id=chat_id,
-        start_node_id=start_node_id,
+        entry_node_ids=[entry_node_id],
         query=query,
     )
     for event in client.workflows.listen(result.workflow_request_id):
@@ -83,9 +83,9 @@ def test_memory_sync() -> None:
         version = client.workflows.get_latest_version(workflow_id)
         version_id = version.id
 
-        start_nodes = client.workflows.get_start_nodes(version_id)
-        assert len(start_nodes.nodes) > 0, "No start nodes found"
-        start_node_id = start_nodes.nodes[0].id
+        entry_nodes = client.workflows.get_entry_nodes(version_id)
+        assert len(entry_nodes.nodes) > 0, "No entry nodes found"
+        entry_node_id = entry_nodes.nodes[0].id
 
         print(f"   ✅ Workflow: {workflow_id[:12]}…  Version: {version_id[:12]}…")
 
@@ -97,7 +97,7 @@ def test_memory_sync() -> None:
         # Send multiple messages to build up memory
         for i, msg in enumerate(["Hello, remember my name is Alice.", "What is 2+2?", "Tell me a joke."], 1):
             print(f"   ▶ Message {i}: {msg[:40]}...")
-            _run_workflow_and_wait(client, workflow_id, version_id, start_node_id, msg, chat_id)
+            _run_workflow_and_wait(client, workflow_id, version_id, entry_node_id, msg, chat_id)
 
         # Short pause to let memory persist
         time.sleep(1)
@@ -181,7 +181,7 @@ def test_memory_sync() -> None:
         if len(after_trim.messages) < 4:
             print("7a) Building up messages for summarization...")
             for msg in ["Remember: project deadline is Friday.", "What tools can you use?"]:
-                _run_workflow_and_wait(client, workflow_id, version_id, start_node_id, msg, chat_id)
+                _run_workflow_and_wait(client, workflow_id, version_id, entry_node_id, msg, chat_id)
             time.sleep(1)
 
         print("7) Summarizing memory...")
@@ -223,7 +223,7 @@ def test_memory_sync() -> None:
 
         # ── 10) Rebuild and test delete ──────────────────────────────
         print("10) Rebuilding memory and testing delete...")
-        _run_workflow_and_wait(client, workflow_id, version_id, start_node_id, "One more message for delete test.", chat_id)
+        _run_workflow_and_wait(client, workflow_id, version_id, entry_node_id, "One more message for delete test.", chat_id)
         time.sleep(1)
 
         # Verify memory exists again
@@ -268,9 +268,9 @@ async def test_memory_async() -> None:
         version = await client.workflows.get_latest_version(workflow_id)
         version_id = version.id
 
-        start_nodes = await client.workflows.get_start_nodes(version_id)
-        assert len(start_nodes.nodes) > 0, "No start nodes found"
-        start_node_id = start_nodes.nodes[0].id
+        entry_nodes = await client.workflows.get_entry_nodes(version_id)
+        assert len(entry_nodes.nodes) > 0, "No entry nodes found"
+        entry_node_id = entry_nodes.nodes[0].id
 
         print(f"   ✅ Workflow: {workflow_id[:12]}…  Version: {version_id[:12]}…")
 
@@ -284,7 +284,7 @@ async def test_memory_async() -> None:
             result = await client.workflows.run(
                 workflow_version_id=version_id,
                 chat_id=chat_id,
-                start_node_id=start_node_id,
+                entry_node_ids=[entry_node_id],
                 query=msg,
             )
             async for event in client.workflows.listen(result.workflow_request_id):

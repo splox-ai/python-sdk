@@ -73,7 +73,6 @@ def mock_history_response() -> dict:
             {
                 "id": "req-001",
                 "workflow_version_id": "ver-001",
-                "start_node_id": "node-001",
                 "status": "completed",
                 "created_at": "2025-01-01T00:00:00Z",
             }
@@ -171,7 +170,7 @@ class TestSyncClient:
         result = client.workflows.run(
             workflow_version_id="ver-001",
             chat_id="chat-001",
-            start_node_id="node-001",
+            entry_node_ids=["node-001"],
             query="Hello",
         )
         assert result.workflow_request_id == "req-001"
@@ -196,7 +195,7 @@ class TestSyncClient:
         result = client.workflows.run(
             workflow_version_id="ver-001",
             chat_id="chat-001",
-            start_node_id="node-001",
+            entry_node_ids=["node-001"],
             query="Analyze this file",
             files=[
                 WorkflowRequestFile(
@@ -420,7 +419,7 @@ class TestErrorHandling:
             client.workflows.run(
                 workflow_version_id="ver-001",
                 chat_id="chat-001",
-                start_node_id="node-001",
+                entry_node_ids=["node-001"],
                 query="test",
             )
         assert exc_info.value.retry_after == 60.0
@@ -472,7 +471,7 @@ class TestAsyncClient:
             result = await client.workflows.run(
                 workflow_version_id="ver-001",
                 chat_id="chat-001",
-                start_node_id="node-001",
+                entry_node_ids=["node-001"],
                 query="Hello",
             )
             assert result.workflow_request_id == "req-001"

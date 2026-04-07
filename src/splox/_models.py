@@ -35,9 +35,9 @@ class WorkflowRequest:
 
     id: str
     workflow_version_id: str
-    start_node_id: str
-    status: str
-    created_at: str
+    entry_node_ids: Optional[list] = None  # Multi-select agent entry node IDs
+    status: str = ""
+    created_at: str = ""
     user_id: Optional[str] = None
     billing_user_id: Optional[str] = None
     parent_node_execution_id: Optional[str] = None
@@ -53,7 +53,7 @@ class WorkflowRequest:
         return cls(
             id=data["id"],
             workflow_version_id=data["workflow_version_id"],
-            start_node_id=data["start_node_id"],
+            entry_node_ids=data.get("entry_node_ids"),
             status=data["status"],
             created_at=data["created_at"],
             user_id=data.get("user_id"),
@@ -453,13 +453,13 @@ class WorkflowListResponse:
 
 
 @dataclass
-class StartNodesResponse:
-    """Response from getting start nodes."""
+class EntryNodesResponse:
+    """Response from getting entry nodes."""
 
     nodes: List[Node]
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> StartNodesResponse:
+    def from_dict(cls, data: Dict[str, Any]) -> EntryNodesResponse:
         return cls(
             nodes=[Node.from_dict(n) for n in (data.get("nodes") or [])],
         )

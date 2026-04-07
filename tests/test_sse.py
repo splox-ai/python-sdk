@@ -10,7 +10,7 @@ class TestSSEParsing:
         assert event.is_keepalive is True
 
     def test_json_data(self) -> None:
-        line = 'data: {"workflow_request":{"id":"req-1","workflow_version_id":"v1","start_node_id":"n1","status":"completed","created_at":"2025-01-01T00:00:00Z"}}'
+        line = 'data: {"workflow_request":{"id":"req-1","workflow_version_id":"v1","status":"completed","created_at":"2025-01-01T00:00:00Z"}}'
         event = _parse_sse_line(line)
         assert event is not None
         assert event.workflow_request is not None
@@ -43,7 +43,6 @@ class TestSSEParsing:
             "workflow_request": {
                 "id": "req-1",
                 "workflow_version_id": "v1",
-                "start_node_id": "n1",
                 "status": "in_progress",
                 "created_at": "2025-01-01T00:00:00Z",
             },

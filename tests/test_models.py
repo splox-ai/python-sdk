@@ -43,7 +43,6 @@ class TestWorkflowRequest:
         data = {
             "id": "req-1",
             "workflow_version_id": "ver-1",
-            "start_node_id": "node-1",
             "status": "pending",
             "created_at": "2025-01-01T00:00:00Z",
         }
@@ -56,7 +55,6 @@ class TestWorkflowRequest:
         data = {
             "id": "req-1",
             "workflow_version_id": "ver-1",
-            "start_node_id": "node-1",
             "status": "completed",
             "created_at": "2025-01-01T00:00:00Z",
             "user_id": "user-1",
@@ -168,7 +166,6 @@ class TestHistoryResponse:
                 {
                     "id": "req-1",
                     "workflow_version_id": "ver-1",
-                    "start_node_id": "node-1",
                     "status": "completed",
                     "created_at": "2025-01-01T00:00:00Z",
                 }
@@ -198,7 +195,6 @@ class TestSSEEvent:
             "workflow_request": {
                 "id": "req-1",
                 "workflow_version_id": "ver-1",
-                "start_node_id": "node-1",
                 "status": "in_progress",
                 "created_at": "2025-01-01T00:00:00Z",
             },

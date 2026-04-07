@@ -21,7 +21,7 @@ from splox._models import (
     RunResponse,
     SSEEvent,
     SecretActionResponse,
-    StartNodesResponse,
+    EntryNodesResponse,
     WorkflowFull,
     WorkflowListResponse,
     WorkflowRequestFile,
@@ -99,17 +99,17 @@ class Workflows:
         data = self._t.request("GET", f"/workflows/{workflow_id}/versions/latest")
         return WorkflowVersion.from_dict(data)
 
-    def get_start_nodes(self, workflow_version_id: str) -> StartNodesResponse:
-        """Get start nodes for a workflow version.
+    def get_entry_nodes(self, workflow_version_id: str) -> EntryNodesResponse:
+        """Get entry nodes for a workflow version.
 
         Args:
             workflow_version_id: The workflow version ID.
 
         Returns:
-            StartNodesResponse with the list of start nodes.
+            EntryNodesResponse with the list of entry nodes.
         """
-        data = self._t.request("GET", f"/workflows/{workflow_version_id}/start-nodes")
-        return StartNodesResponse.from_dict(data)
+        data = self._t.request("GET", f"/workflows/{workflow_version_id}/entry-nodes")
+        return EntryNodesResponse.from_dict(data)
 
     def list_versions(self, workflow_id: str) -> WorkflowVersionListResponse:
         """List all versions of a workflow.
@@ -128,7 +128,7 @@ class Workflows:
         *,
         workflow_version_id: str,
         chat_id: str,
-        start_node_id: str,
+        entry_node_ids: Optional[List[str]] = None,
         query: str,
         files: Optional[List[WorkflowRequestFile]] = None,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -139,7 +139,7 @@ class Workflows:
         Args:
             workflow_version_id: ID of the workflow version to execute.
             chat_id: Chat session ID.
-            start_node_id: ID of the Start node to begin execution at.
+            entry_node_ids: List of agent node IDs that receive the message (multi-select).
             query: The user message or query text.
             files: Optional file attachments.
             additional_params: Optional extra parameters.
@@ -151,9 +151,10 @@ class Workflows:
         body: Dict[str, Any] = {
             "workflow_version_id": workflow_version_id,
             "chat_id": chat_id,
-            "start_node_id": start_node_id,
             "query": query,
         }
+        if entry_node_ids is not None:
+            body["entry_node_ids"] = entry_node_ids
         if files is not None:
             body["files"] = [f.to_dict() for f in files]
         if additional_params is not None:
@@ -230,7 +231,7 @@ class Workflows:
         *,
         workflow_version_id: str,
         chat_id: str,
-        start_node_id: str,
+        entry_node_ids: Optional[List[str]] = None,
         query: str,
         files: Optional[List[WorkflowRequestFile]] = None,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -246,7 +247,7 @@ class Workflows:
         Args:
             workflow_version_id: ID of the workflow version to execute.
             chat_id: Chat session ID.
-            start_node_id: ID of the Start node.
+            entry_node_ids: List of agent node IDs that receive the message (multi-select).
             query: The user message or query text.
             files: Optional file attachments.
             additional_params: Optional extra parameters.
@@ -263,7 +264,7 @@ class Workflows:
         result = self.run(
             workflow_version_id=workflow_version_id,
             chat_id=chat_id,
-            start_node_id=start_node_id,
+            entry_node_ids=entry_node_ids,
             query=query,
             files=files,
             additional_params=additional_params,
@@ -478,17 +479,17 @@ class AsyncWorkflows:
         data = await self._t.request("GET", f"/workflows/{workflow_id}/versions/latest")
         return WorkflowVersion.from_dict(data)
 
-    async def get_start_nodes(self, workflow_version_id: str) -> StartNodesResponse:
-        """Get start nodes for a workflow version.
+    async def get_entry_nodes(self, workflow_version_id: str) -> EntryNodesResponse:
+        """Get entry nodes for a workflow version.
 
         Args:
             workflow_version_id: The workflow version ID.
 
         Returns:
-            StartNodesResponse with the list of start nodes.
+            EntryNodesResponse with the list of entry nodes.
         """
-        data = await self._t.request("GET", f"/workflows/{workflow_version_id}/start-nodes")
-        return StartNodesResponse.from_dict(data)
+        data = await self._t.request("GET", f"/workflows/{workflow_version_id}/entry-nodes")
+        return EntryNodesResponse.from_dict(data)
 
     async def list_versions(self, workflow_id: str) -> WorkflowVersionListResponse:
         """List all versions of a workflow.
@@ -507,7 +508,7 @@ class AsyncWorkflows:
         *,
         workflow_version_id: str,
         chat_id: str,
-        start_node_id: str,
+        entry_node_ids: Optional[List[str]] = None,
         query: str,
         files: Optional[List[WorkflowRequestFile]] = None,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -518,7 +519,7 @@ class AsyncWorkflows:
         Args:
             workflow_version_id: ID of the workflow version to execute.
             chat_id: Chat session ID.
-            start_node_id: ID of the Start node to begin execution at.
+            entry_node_ids: List of agent node IDs that receive the message (multi-select).
             query: The user message or query text.
             files: Optional file attachments.
             additional_params: Optional extra parameters.
@@ -530,9 +531,10 @@ class AsyncWorkflows:
         body: Dict[str, Any] = {
             "workflow_version_id": workflow_version_id,
             "chat_id": chat_id,
-            "start_node_id": start_node_id,
             "query": query,
         }
+        if entry_node_ids is not None:
+            body["entry_node_ids"] = entry_node_ids
         if files is not None:
             body["files"] = [f.to_dict() for f in files]
         if additional_params is not None:
@@ -614,7 +616,7 @@ class AsyncWorkflows:
         *,
         workflow_version_id: str,
         chat_id: str,
-        start_node_id: str,
+        entry_node_ids: Optional[List[str]] = None,
         query: str,
         files: Optional[List[WorkflowRequestFile]] = None,
         additional_params: Optional[Dict[str, Any]] = None,
@@ -626,7 +628,7 @@ class AsyncWorkflows:
         Args:
             workflow_version_id: ID of the workflow version to execute.
             chat_id: Chat session ID.
-            start_node_id: ID of the Start node.
+            entry_node_ids: List of agent node IDs that receive the message (multi-select).
             query: The user message or query text.
             files: Optional file attachments.
             additional_params: Optional extra parameters.
@@ -644,7 +646,7 @@ class AsyncWorkflows:
         result = await self.run(
             workflow_version_id=workflow_version_id,
             chat_id=chat_id,
-            start_node_id=start_node_id,
+            entry_node_ids=entry_node_ids,
             query=query,
             files=files,
             additional_params=additional_params,

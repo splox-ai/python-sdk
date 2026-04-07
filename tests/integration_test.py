@@ -70,14 +70,14 @@ def test_sync() -> None:
         assert version.workflow_id == workflow_id
         print(f"   ✅ Latest version: {version.id} (v{version.version_number}, status={version.status})")
 
-        # 5. Get start nodes
-        print("5) Getting start nodes...")
-        start_nodes_resp = client.workflows.get_start_nodes(version.id)
-        assert len(start_nodes_resp.nodes) > 0
-        start_node = start_nodes_resp.nodes[0]
-        print(f"   ✅ Found {len(start_nodes_resp.nodes)} start node(s)")
-        for sn in start_nodes_resp.nodes:
-            print(f"      • {sn.id} — {sn.label}")
+        # 5. Get entry nodes
+        print("5) Getting entry nodes...")
+        entry_nodes_resp = client.workflows.get_entry_nodes(version.id)
+        assert len(entry_nodes_resp.nodes) > 0
+        entry_node = entry_nodes_resp.nodes[0]
+        print(f"   ✅ Found {len(entry_nodes_resp.nodes)} entry node(s)")
+        for en in entry_nodes_resp.nodes:
+            print(f"      • {en.id} — {en.label}")
 
         # 6. Full programmatic flow (no hardcoded IDs)
         print("6) Full programmatic flow (discover → run → wait)...")
@@ -90,7 +90,7 @@ def test_sync() -> None:
         result = client.workflows.run(
             workflow_version_id=version.id,
             chat_id=chat.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Hello from fully programmatic SDK test!",
         )
         print(f"   ▶ Workflow {result.workflow_request_id} started")
@@ -111,7 +111,7 @@ def test_sync() -> None:
         result2 = client.workflows.run(
             workflow_version_id=version.id,
             chat_id=chat.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Second message for chat listen test",
         )
         chat_event_count = 0
@@ -128,7 +128,7 @@ def test_sync() -> None:
         result3 = client.workflows.run(
             workflow_version_id=version.id,
             chat_id=chat.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="This should be stopped",
         )
         try:
@@ -143,7 +143,7 @@ def test_sync() -> None:
         tree_resp2 = client.workflows.run_and_wait(
             workflow_version_id=version.id,
             chat_id=chat2.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Run and wait test",
             timeout=120,
         )
@@ -220,12 +220,12 @@ async def test_async() -> None:
         latest = await client.workflows.get_latest_version(workflow_id)
         print(f"   ✅ v{latest.version_number}, status={latest.status}")
 
-        # 4. Get start nodes
-        print("4) Getting start nodes (async)...")
-        start_nodes = await client.workflows.get_start_nodes(latest.id)
-        assert len(start_nodes.nodes) > 0
-        start_node = start_nodes.nodes[0]
-        print(f"   ✅ Start node: {start_node.id} — {start_node.label}")
+        # 4. Get entry nodes
+        print("4) Getting entry nodes (async)...")
+        entry_nodes = await client.workflows.get_entry_nodes(latest.id)
+        assert len(entry_nodes.nodes) > 0
+        entry_node = entry_nodes.nodes[0]
+        print(f"   ✅ Entry node: {entry_node.id} — {entry_node.label}")
 
         # 5. Full programmatic flow (async)
         print("5) Full async programmatic flow...")
@@ -236,7 +236,7 @@ async def test_async() -> None:
         result = await client.workflows.run(
             workflow_version_id=latest.id,
             chat_id=chat.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Hello from async programmatic test!",
         )
         print(f"   ▶ Started: {result.workflow_request_id}")
@@ -256,7 +256,7 @@ async def test_async() -> None:
         result2 = await client.workflows.run(
             workflow_version_id=latest.id,
             chat_id=chat.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Async chat listen test",
         )
         chat_event_count = 0
@@ -274,7 +274,7 @@ async def test_async() -> None:
         tree_resp2 = await client.workflows.run_and_wait(
             workflow_version_id=latest.id,
             chat_id=chat2.id,
-            start_node_id=start_node.id,
+            entry_node_ids=[entry_node.id],
             query="Async run and wait test",
             timeout=120,
         )

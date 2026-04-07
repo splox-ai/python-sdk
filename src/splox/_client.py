@@ -37,7 +37,7 @@ class SploxClient:
         result = client.workflows.run(
             workflow_version_id="ver-id",
             chat_id=chat.id,
-            start_node_id="node-id",
+            entry_node_ids=["node-id"],
             query="Hello",
         )
     """
@@ -98,7 +98,7 @@ class AsyncSploxClient:
             result = await client.workflows.run(
                 workflow_version_id="ver-id",
                 chat_id=chat.id,
-                start_node_id="node-id",
+                entry_node_ids=["node-id"],
                 query="Hello",
             )
     """
