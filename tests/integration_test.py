@@ -2,7 +2,7 @@
 
 Requires environment variables:
     SPLOX_API_KEY          — API token for authentication
-    SPLOX_BASE_URL         — (optional) API base URL, defaults to https://app.splox.io/api/v1
+    SPLOX_BASE_URL         — (optional) API base URL, defaults to https://splox.io/api/v1
     SPLOX_TEST_WORKFLOW    — (optional) workflow name to search for, defaults to "Test"
 """
 

@@ -1102,6 +1102,29 @@ class MCPServerToolsResponse:
         )
 
 
+@dataclass
+class AgentResult:
+    """Result returned for one gathered child agent run."""
+
+    run_id: str
+    status: str
+    result: Optional[str] = None
+    error: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> AgentResult:
+        return cls(
+            run_id=data["run_id"],
+            status="running" if data["status"] == "in_progress" else data["status"],
+            result=data.get("result"),
+            error=data.get("error"),
+        )
+
+
+# Backwards-compatible alias for older imports.
+AgentGatherResult = AgentResult
+
+
 # --- Workflow Secrets ---
 
 

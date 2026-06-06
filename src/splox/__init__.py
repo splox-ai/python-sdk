@@ -47,6 +47,8 @@ from splox._models import (
     TransactionPagination,
     TransactionHistoryResponse,
     ActivityStats,
+    AgentResult,
+    AgentGatherResult,
     DailyActivity,
     DailyActivityResponse,
     ChatCompletion,
@@ -55,6 +57,7 @@ from splox._models import (
     ChatCompletionUsage,
 )
 from splox._mcp import generate_connection_token, generate_connection_link
+from splox._agents import AgentRun, AsyncAgentRun, AgentError
 from splox._resources import notify, async_notify
 
 __all__ = [
@@ -101,6 +104,11 @@ __all__ = [
     "TransactionPagination",
     "TransactionHistoryResponse",
     "ActivityStats",
+    "AgentResult",
+    "AgentGatherResult",
+    "AgentRun",
+    "AsyncAgentRun",
+    "AgentError",
     "DailyActivity",
     "DailyActivityResponse",
     "EndUserSecretsSummary",
@@ -117,4 +125,4 @@ __all__ = [
     "async_notify",
 ]
 
-__version__ = "0.0.9"
+__version__ = "0.0.16"

@@ -134,7 +134,7 @@ class TestSyncClient:
     def test_create_chat(self, httpx_mock, mock_chat_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/chats",
+            url="https://splox.io/api/v1/chats",
             json=mock_chat_response,
             status_code=201,
         )
@@ -150,7 +150,7 @@ class TestSyncClient:
     def test_get_chat(self, httpx_mock, mock_chat_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/chat-001",
+            url="https://splox.io/api/v1/chats/chat-001",
             json=mock_chat_response,
         )
 
@@ -162,7 +162,7 @@ class TestSyncClient:
     def test_run_workflow(self, httpx_mock, mock_run_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/workflow-requests/run",
+            url="https://splox.io/api/v1/workflow-requests/run",
             json=mock_run_response,
         )
 
@@ -185,7 +185,7 @@ class TestSyncClient:
     def test_run_workflow_with_files(self, httpx_mock, mock_run_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/workflow-requests/run",
+            url="https://splox.io/api/v1/workflow-requests/run",
             json=mock_run_response,
         )
 
@@ -216,7 +216,7 @@ class TestSyncClient:
     def test_get_execution_tree(self, httpx_mock, mock_execution_tree_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/workflow-requests/req-001/execution-tree",
+            url="https://splox.io/api/v1/workflow-requests/req-001/execution-tree",
             json=mock_execution_tree_response,
         )
 
@@ -231,7 +231,7 @@ class TestSyncClient:
         httpx_mock.add_response(
             method="GET",
             url=httpx.URL(
-                "https://app.splox.io/api/v1/workflow-requests/req-001/history",
+                "https://splox.io/api/v1/workflow-requests/req-001/history",
                 params={"limit": "10"},
             ),
             json=mock_history_response,
@@ -246,7 +246,7 @@ class TestSyncClient:
     def test_stop_workflow(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/workflow-requests/req-001/stop",
+            url="https://splox.io/api/v1/workflow-requests/req-001/stop",
             status_code=200,
         )
 
@@ -257,7 +257,7 @@ class TestSyncClient:
     def test_send_event(self, httpx_mock, mock_event_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/events/wh-001",
+            url="https://splox.io/api/v1/events/wh-001",
             json=mock_event_response,
         )
 
@@ -273,7 +273,7 @@ class TestSyncClient:
     def test_send_event_with_secret(self, httpx_mock, mock_event_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/events/wh-001",
+            url="https://splox.io/api/v1/events/wh-001",
             json=mock_event_response,
         )
 
@@ -291,7 +291,7 @@ class TestSyncClient:
     def test_context_manager(self, httpx_mock, mock_chat_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/chat-001",
+            url="https://splox.io/api/v1/chats/chat-001",
             json=mock_chat_response,
         )
 
@@ -314,10 +314,39 @@ class TestSyncClient:
         assert chat.id == "chat-001"
         client.close()
 
+    def test_base_url_from_env(self, httpx_mock, mock_chat_response, monkeypatch) -> None:
+        monkeypatch.setenv("SPLOX_BASE_URL", "https://env.example.com/api/v1")
+        httpx_mock.add_response(
+            method="GET",
+            url="https://env.example.com/api/v1/chats/chat-001",
+            json=mock_chat_response,
+        )
+
+        client = SploxClient(api_key="test-key")
+        chat = client.chats.get("chat-001")
+        assert chat.id == "chat-001"
+        client.close()
+
+    def test_explicit_base_url_overrides_env(self, httpx_mock, mock_chat_response, monkeypatch) -> None:
+        monkeypatch.setenv("SPLOX_BASE_URL", "https://env.example.com/api/v1")
+        httpx_mock.add_response(
+            method="GET",
+            url="https://custom.example.com/api/v1/chats/chat-001",
+            json=mock_chat_response,
+        )
+
+        client = SploxClient(
+            api_key="test-key",
+            base_url="https://custom.example.com/api/v1",
+        )
+        chat = client.chats.get("chat-001")
+        assert chat.id == "chat-001"
+        client.close()
+
     def test_mcp_list_connections_scope_servers(self, httpx_mock, mock_mcp_server_connections_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/mcp-connections?scope=owner_user",
+            url="https://splox.io/api/v1/mcp-connections?scope=owner_user",
             json=mock_mcp_server_connections_response,
         )
 
@@ -333,7 +362,7 @@ class TestSyncClient:
     def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
+            url="https://splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
             json=mock_mcp_server_tools_response,
         )
 
@@ -356,7 +385,7 @@ class TestErrorHandling:
     def test_401_raises_auth_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/chat-001",
+            url="https://splox.io/api/v1/chats/chat-001",
             json={"error": "Invalid token"},
             status_code=401,
         )
@@ -370,7 +399,7 @@ class TestErrorHandling:
     def test_403_raises_forbidden_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/chat-001",
+            url="https://splox.io/api/v1/chats/chat-001",
             json={"error": "Webhook disabled"},
             status_code=403,
         )
@@ -383,7 +412,7 @@ class TestErrorHandling:
     def test_404_raises_not_found_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/missing",
+            url="https://splox.io/api/v1/chats/missing",
             status_code=404,
         )
 
@@ -395,7 +424,7 @@ class TestErrorHandling:
     def test_410_raises_gone_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/events/wh-expired",
+            url="https://splox.io/api/v1/events/wh-expired",
             json={"error": "Webhook expired"},
             status_code=410,
         )
@@ -408,7 +437,7 @@ class TestErrorHandling:
     def test_429_raises_rate_limit_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/workflow-requests/run",
+            url="https://splox.io/api/v1/workflow-requests/run",
             json={"error": "Rate limit exceeded"},
             status_code=429,
             headers={"Retry-After": "60"},
@@ -428,7 +457,7 @@ class TestErrorHandling:
     def test_500_raises_api_error(self, httpx_mock) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/chats/chat-001",
+            url="https://splox.io/api/v1/chats/chat-001",
             json={"error": "Internal server error"},
             status_code=500,
         )
@@ -450,7 +479,7 @@ class TestAsyncClient:
     async def test_create_chat(self, httpx_mock, mock_chat_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/chats",
+            url="https://splox.io/api/v1/chats",
             json=mock_chat_response,
             status_code=201,
         )
@@ -463,7 +492,7 @@ class TestAsyncClient:
     async def test_run_workflow(self, httpx_mock, mock_run_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/workflow-requests/run",
+            url="https://splox.io/api/v1/workflow-requests/run",
             json=mock_run_response,
         )
 
@@ -480,7 +509,7 @@ class TestAsyncClient:
     async def test_get_execution_tree(self, httpx_mock, mock_execution_tree_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/workflow-requests/req-001/execution-tree",
+            url="https://splox.io/api/v1/workflow-requests/req-001/execution-tree",
             json=mock_execution_tree_response,
         )
 
@@ -492,7 +521,7 @@ class TestAsyncClient:
     async def test_send_event(self, httpx_mock, mock_event_response) -> None:
         httpx_mock.add_response(
             method="POST",
-            url="https://app.splox.io/api/v1/events/wh-001",
+            url="https://splox.io/api/v1/events/wh-001",
             json=mock_event_response,
         )
 
@@ -507,7 +536,7 @@ class TestAsyncClient:
     async def test_mcp_list_connections_scope_servers(self, httpx_mock, mock_mcp_server_connections_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/mcp-connections?scope=owner_user",
+            url="https://splox.io/api/v1/mcp-connections?scope=owner_user",
             json=mock_mcp_server_connections_response,
         )
 
@@ -521,7 +550,7 @@ class TestAsyncClient:
     async def test_mcp_get_server_tools(self, httpx_mock, mock_mcp_server_tools_response) -> None:
         httpx_mock.add_response(
             method="GET",
-            url="https://app.splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
+            url="https://splox.io/api/v1/user-mcp-servers/0199e001-a23b-7c8d-1234-567890abcdef/tools",
             json=mock_mcp_server_tools_response,
         )
 

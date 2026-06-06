@@ -21,8 +21,9 @@ from splox._resources import (
     notify,
     async_notify,
 )
+from splox._agents import Agents, AsyncAgents
 from splox._mcp import AsyncMCP, MCP
-from splox._transport import DEFAULT_BASE_URL, DEFAULT_TIMEOUT, AsyncTransport, SyncTransport
+from splox._transport import DEFAULT_TIMEOUT, AsyncTransport, SyncTransport
 
 
 class SploxClient:
@@ -46,14 +47,14 @@ class SploxClient:
         self,
         api_key: Optional[str] = None,
         *,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """Initialize the Splox client.
 
         Args:
             api_key: API token. Falls back to ``SPLOX_API_KEY`` env var.
-            base_url: API base URL (default: ``https://app.splox.io/api/v1``).
+            base_url: API base URL. Falls back to ``SPLOX_BASE_URL`` env var, then ``https://splox.io/api/v1``.
             timeout: Request timeout in seconds (default: 30).
         """
         resolved_key = api_key or os.environ.get("SPLOX_API_KEY")
@@ -68,6 +69,7 @@ class SploxClient:
         self.billing = Billing(self._transport)
         self.memory = Memory(self._transport)
         self.mcp = MCP(self._transport)
+        self.agents = Agents(self._transport)
         self.llm = LLM(self._transport)
 
     @staticmethod
@@ -107,14 +109,14 @@ class AsyncSploxClient:
         self,
         api_key: Optional[str] = None,
         *,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
         """Initialize the async Splox client.
 
         Args:
             api_key: API token. Falls back to ``SPLOX_API_KEY`` env var.
-            base_url: API base URL (default: ``https://app.splox.io/api/v1``).
+            base_url: API base URL. Falls back to ``SPLOX_BASE_URL`` env var, then ``https://splox.io/api/v1``.
             timeout: Request timeout in seconds (default: 30).
         """
         resolved_key = api_key or os.environ.get("SPLOX_API_KEY")
@@ -129,6 +131,7 @@ class AsyncSploxClient:
         self.billing = AsyncBilling(self._transport)
         self.memory = AsyncMemory(self._transport)
         self.mcp = AsyncMCP(self._transport)
+        self.agents = AsyncAgents(self._transport)
         self.llm = AsyncLLM(self._transport)
 
     @staticmethod

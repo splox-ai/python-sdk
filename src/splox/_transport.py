@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any, AsyncIterator, Dict, Iterator, Optional
 
 import httpx
@@ -18,8 +19,12 @@ from splox.exceptions import (
     SploxRateLimitError,
 )
 
-DEFAULT_BASE_URL = "https://app.splox.io/api/v1"
+DEFAULT_BASE_URL = "https://splox.io/api/v1"
 DEFAULT_TIMEOUT = 30.0
+
+
+def _resolve_base_url(base_url: Optional[str] = None) -> str:
+    return base_url or os.environ.get("SPLOX_BASE_URL") or DEFAULT_BASE_URL
 
 
 def _build_headers(api_key: Optional[str]) -> Dict[str, str]:
@@ -95,13 +100,17 @@ def _parse_sse_line(line: str) -> Optional[SSEEvent]:
 class SyncTransport:
     """Synchronous HTTP transport using httpx."""
 
+    @property
+    def base_url(self) -> str:
+        return self._base_url
+
     def __init__(
         self,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
-        self._base_url = base_url.rstrip("/")
+        self._base_url = _resolve_base_url(base_url).rstrip("/")
         self._client = httpx.Client(
             base_url=self._base_url,
             headers=_build_headers(api_key),
@@ -116,6 +125,7 @@ class SyncTransport:
         json_body: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         try:
             response = self._client.request(
@@ -124,6 +134,7 @@ class SyncTransport:
                 json=json_body,
                 params=params,
                 headers=headers,
+                timeout=timeout,
             )
         except httpx.ConnectError as e:
             raise SploxConnectionError(f"Failed to connect to {self._base_url}: {e}") from e
@@ -158,13 +169,17 @@ class SyncTransport:
 class AsyncTransport:
     """Asynchronous HTTP transport using httpx."""
 
+    @property
+    def base_url(self) -> str:
+        return self._base_url
+
     def __init__(
         self,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
-        self._base_url = base_url.rstrip("/")
+        self._base_url = _resolve_base_url(base_url).rstrip("/")
         self._client = httpx.AsyncClient(
             base_url=self._base_url,
             headers=_build_headers(api_key),
@@ -179,6 +194,7 @@ class AsyncTransport:
         json_body: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
     ) -> Dict[str, Any]:
         try:
             response = await self._client.request(
@@ -187,6 +203,7 @@ class AsyncTransport:
                 json=json_body,
                 params=params,
                 headers=headers,
+                timeout=timeout,
             )
         except httpx.ConnectError as e:
             raise SploxConnectionError(f"Failed to connect to {self._base_url}: {e}") from e

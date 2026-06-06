@@ -3,7 +3,7 @@
 Required env vars:
     SPLOX_API_KEY
 Optional env vars:
-    SPLOX_BASE_URL            (default: https://app.splox.io/api/v1)
+    SPLOX_BASE_URL            (default: https://splox.io/api/v1)
     SPLOX_MCP_SEARCH_QUERY    (default: "")
 
 For execute-tool integration (optional):
@@ -25,14 +25,14 @@ from splox import AsyncSploxClient, SploxClient
 def _normalize_base_url(value: str) -> str:
     base = value.strip()
     if not base:
-        return "https://app.splox.io/api/v1"
+        return "https://splox.io/api/v1"
     if not base.startswith("http://") and not base.startswith("https://"):
         base = "https://" + base
     return base
 
 
 API_KEY = os.environ.get("SPLOX_API_KEY", "").strip()
-BASE_URL = _normalize_base_url(os.environ.get("SPLOX_BASE_URL", "https://app.splox.io/api/v1"))
+BASE_URL = _normalize_base_url(os.environ.get("SPLOX_BASE_URL", "https://splox.io/api/v1"))
 SEARCH_QUERY = os.environ.get("SPLOX_MCP_SEARCH_QUERY", "")
 
 EXEC_SERVER_ID = os.environ.get("SPLOX_MCP_SERVER_ID", "").strip()
