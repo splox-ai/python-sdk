@@ -57,6 +57,10 @@ class AgentRun:
             raise AgentError(current.error or current.status)
         raise TimeoutError(f"agent run {self.run_id} did not finish before timeout")
 
+    def stop(self) -> List[Dict[str, str]]:
+        """Stop this child agent run."""
+        return self._agents.stop([self])
+
 
 class AsyncAgentRun:
     """Async handle for an already-running child agent run."""
@@ -85,6 +89,10 @@ class AsyncAgentRun:
         if current.status in {"failed", "stopped"}:
             raise AgentError(current.error or current.status)
         raise TimeoutError(f"agent run {self.run_id} did not finish before timeout")
+
+    async def stop(self) -> List[Dict[str, str]]:
+        """Stop this child agent run."""
+        return await self._agents.stop([self])
 
 
 def _run_id(run: Union[AgentRun, AsyncAgentRun, str]) -> str:
@@ -164,6 +172,14 @@ class Agents:
             if poll_interval > 0 and elapsed_request < poll_interval:
                 time.sleep(poll_interval - elapsed_request)
 
+    def stop(self, runs: Sequence[Union[AgentRun, str]]) -> List[Dict[str, str]]:
+        """Stop AgentRun handles or run_id strings and return stop result dicts."""
+        run_ids = [_run_id(r) for r in runs]
+        if not run_ids:
+            return []
+        data = self._t.request("POST", "/agents/stop", json_body={"run_ids": run_ids})
+        return list(data.get("results") or [])
+
 
 class AsyncAgents:
     """Asynchronous agent spawn/gather operations."""
@@ -232,3 +248,11 @@ class AsyncAgents:
             elapsed_request = time.monotonic() - request_started
             if poll_interval > 0 and elapsed_request < poll_interval:
                 await asyncio.sleep(poll_interval - elapsed_request)
+    async def stop(self, runs: Sequence[Union[AsyncAgentRun, str]]) -> List[Dict[str, str]]:
+        """Stop async AgentRun handles or run_id strings and return stop result dicts."""
+        run_ids = [_run_id(r) for r in runs]
+        if not run_ids:
+            return []
+        data = await self._t.request("POST", "/agents/stop", json_body={"run_ids": run_ids})
+        return list(data.get("results") or [])
+
