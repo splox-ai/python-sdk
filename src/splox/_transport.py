@@ -20,7 +20,7 @@ from splox.exceptions import (
 )
 
 DEFAULT_BASE_URL = "https://splox.io/api/v1"
-DEFAULT_TIMEOUT = 30.0
+DEFAULT_TIMEOUT = 300.0
 
 
 def _resolve_base_url(base_url: Optional[str] = None) -> str:
